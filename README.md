@@ -26,14 +26,15 @@ The spec is detected from your talents (**Auto**) or set by hand: `/mage arcane`
 
 | Spec | How it is played on Forever | What the HUD shows |
 |---|---|---|
-| **Arcane** | Build Arcane Blast stacks (4, 18 s), spend them on Arcane Wrath (6 s cooldown). Free, fast Arcane Missiles when Missile Barrage procs. Arcane Power + Presence of Mind for burst. | Stack bar: **Arcane Blast** (4). Procs: Missile Barrage, Clearcasting, Presence of Mind, Arcane Power. Cooldowns: Arcane Wrath, Arcane Power, Presence of Mind |
-| **Fire** | Fire Blast on cooldown, crits build **Heating Up** (3 stacks, each -25% cast time on Pyroblast, which is a 6 s cast on Forever), then Pyroblast. Scorch keeps your Fire Vulnerability at 5 stacks. Ignite rolls. Fireball / Frostfire Bolt as filler. Combustion for burst. | Stack bar: **Heating Up** (3, "Pyroblast!"). Debuffs: Fire Vulnerability (stacks), Ignite, Pyroblast, Frostfire Bolt. Procs: Combustion, Wake of Fire, Clearcasting, Missile Barrage. Cooldowns: Fire Blast, Combustion, Blast Wave |
-| **Frost** | Frostbolt filler. Ice Lance (x4 damage) on frozen targets (Frost Nova, Frostbite) or with Fingers of Frost charges. Frostbolt builds **Winter's Chill** (5 stacks) for a strong Cone of Cold. Keep Ice Barrier up. | Stack bar: **Winter's Chill** on the target (5, "Cone of Cold!"). Debuffs: Frost Nova and Frostbite (target frozen = Ice Lance window). Procs: Fingers of Frost (charges), Clearcasting, Missile Barrage, Presence of Mind. Cooldowns: Ice Lance, Ice Barrier, Cone of Cold, Cold Snap |
+| **Arcane** | Build Arcane Blast stacks (4, 18 s window). Clearcasting goes on Arcane Blast, Missile Barrage on Arcane Missiles, Arcane Wrath at 3-4 stacks (twice per window). Level 60 builds dip into Fire: Fire Blast on cooldown builds Heating Up, then Pyroblast at 4 stacks. Arcane Power / Presence of Mind at 4 stacks. | Stack bar: **Arcane Blast** (4) with the time left of the window. Procs: Missile Barrage, Clearcasting, Heating Up, Arcane Power, Presence of Mind. Cooldowns: Arcane Wrath, Fire Blast, Arcane Power, Presence of Mind |
+| **Fire** | Scorch to 5 Improved Scorch stacks, Fire Blast on cooldown, crits build **Heating Up** (3 stacks, each -25% cast time on Pyroblast, a 6 s cast on Forever), then Pyroblast. Fireball filler. Fire Power rewards Fireball DoT, Improved Scorch, Ignite and Pyroblast DoT on the target. Combustion for burst. Frostfire variant: Frostfire Bolt filler, Ice Lance on Fingers of Frost. | Stack bar: **Heating Up** (3, "Pyroblast!"). Debuffs: Fire Vulnerability (stacks), Fireball, Ignite, Pyroblast, Frostfire Bolt. Procs: Combustion, Wake of Fire, Clearcasting, Missile Barrage, Fingers of Frost. Cooldowns: Fire Blast, Ice Lance, Combustion, Blast Wave |
+| **Frost** | Frostbolt filler. Ice Lance (x4 damage) on Fingers of Frost, Frostbite or after Frost Nova. Arcane Missiles on Missile Barrage. Winter's Chill build: Cone of Cold at 5 stacks. Keep Arcane Intellect and Ice Barrier up at all times. | Stack bar: **Winter's Chill** on the target (5, "Cone of Cold!"). Debuffs: Frost Nova and Frostbite (target frozen = Ice Lance window). Procs: Fingers of Frost (charges), Clearcasting, Missile Barrage, Presence of Mind. Cooldowns: Ice Lance, Ice Barrier, Cone of Cold, Cold Snap. Alert when Ice Barrier is not up |
 
 Every spec also gets Frost Nova, Blink, Counterspell, Ice Block and Evocation in the cooldown row. Only spells you
 know are shown. Fire Blast and Ice Lance share one 8 s cooldown on Forever.
 
-Not on Forever, so not tracked: Living Bomb, Icy Veins, Arcane Barrage, Brain Freeze, Molten Armor, Water Elemental and the SoD runes.
+Rotations follow the Warcraft Tavern Forever guides (Nov 2026); spells, cooldowns and durations were checked against
+Wowhead's Forever data. Not on Forever, so not tracked: Living Bomb, Icy Veins, Arcane Barrage, Brain Freeze, Molten Armor, Water Elemental and the SoD runes.
 
 ## Quick start
 
@@ -81,9 +82,9 @@ Alerts stack at the top of the screen. All positions are saved per account.
 | **Mana Bar** | Thin mana bar, red when low, hidden at full mana out of combat | width, height, red below %, percentage text, hide at full |
 | **Procs** | One centred row that shows only active procs and burst buffs of your spec, with a time-left swipe and stacks. A big card ("Pyroblast!", "Ice Lance!") while the client lights up one of your spells, with an optional sound | icon size (after /reload), card on/off, sound |
 | **Stack Bar** | Segmented bar for your spec's stacks, gold at full with a glow, a sound and a hint | width, height, glow, sound, hide at zero |
-| **Target Debuffs** | Fire: Fire Vulnerability, Ignite, Pyroblast, Frostfire Bolt. Frost: Frost Nova, Frostbite. One bar per debuff of yours on the target, with the real time left and stacks | width, height |
+| **Target Debuffs** | Fire: Fire Vulnerability, Fireball, Ignite, Pyroblast, Frostfire Bolt. Frost: Frost Nova, Frostbite. One bar per debuff of yours on the target, with the real time left and stacks | width, height |
 | **Cooldowns** | Your spec's cooldowns plus the shared ones; the GCD is ignored. An icon glows while the client lights it up | icon size |
-| **Reminders** | Alerts: Arcane Intellect missing, no armor spell, no mana gem, low on Runes of Teleportation/Portals. Absorb icon for Ice Barrier / Mana Shield with time left | each reminder on/off, also in combat, rune threshold, absorb icon and size, snooze time |
+| **Reminders** | Alerts: Arcane Intellect missing, no armor spell, Ice Barrier not up (Frost), no mana gem, low on Runes of Teleportation/Portals. Absorb icon for Ice Barrier / Mana Shield with time left | each reminder on/off, also in combat, rune threshold, absorb icon and size, snooze time |
 
 **Appearance:** accent colour (Mage, *Follow spec*, Arcane, Fire, Frost), font, text size, bar texture, sounds,
 out-of-combat opacity (0% = hidden), show the HUD when an enemy is targeted, HUD scale, edit mode grid,

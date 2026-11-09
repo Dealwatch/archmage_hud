@@ -1,7 +1,8 @@
 --[[
     MageForever - reminders
       * Arcane Intellect / Arcane Brilliance missing.
-      * No armor spell up (Frost / Ice / Mage / Molten Armor, whichever you know).
+      * No armor spell up (Frost / Ice / Mage Armor, whichever you know).
+      * Frost: Ice Barrier not up (guides: keep it up at all times).
       * No mana gem in your bags (when you can conjure one).
       * Low on Runes of Teleportation / Portals (when you know those spells).
       * Absorb icon: Ice Barrier or Mana Shield with time left, drawn by the
@@ -22,6 +23,7 @@ local R = NS:NewModule("reminders", {
 local BUFFS = {
     intellect = { keys = { "arcaneIntellect", "arcaneBrilliance" }, setting = "intellect" },
     armor     = { keys = { "mageArmor", "iceArmor", "frostArmor" }, setting = "armor" },
+    barrier   = { keys = { "iceBarrier" }, setting = "barrier", spec = "frost" },
 }
 local state = {}        -- buff -> true / false / nil (unknown)
 R.state = state
@@ -66,7 +68,7 @@ function R:Update()
         local read = readBuff(b.keys)
         if read ~= nil then state[name] = read end
         local def = knownAny(b.keys)
-        if on and db[b.setting] and def and state[name] == false and not quiet then
+        if on and db[b.setting] and def and state[name] == false and not quiet and (not b.spec or b.spec == NS.spec) then
             A:Set(name, { title = "No " .. (def.name or def.en), text = "Rebuff yourself", icon = def.icon, priority = 4 })
         else
             A:Clear(name)
@@ -156,6 +158,7 @@ function R:Init()
     NS:On("PLAYER_ALIVE", update)
     NS:On("PLAYER_UNGHOST", update)
     NS:On("MF_SPELLS", function() self:Apply() end)
+    NS:On("MF_SPEC", update)
     NS:OnUnit("UNIT_SPELLCAST_SUCCEEDED", "player", function(_, _, _, spellID)
         local key = Spells:KeyFor(spellID)
         if not key then return end

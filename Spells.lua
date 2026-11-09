@@ -36,7 +36,8 @@ local DEFS = {
     counterspell    = { en = "Counterspell",      ids = { 2139 } },
 
     -- Fire
-    fireball        = { en = "Fireball",          ids = { 133, 143, 145, 3140, 8400, 8401, 8402, 10148, 10149, 10150, 10151, 25306 } },
+    fireball        = { en = "Fireball",          ids = { 133, 143, 145, 3140, 8400, 8401, 8402, 10148, 10149, 10150, 10151, 25306 },
+                        dur = 8, color = { 1, 0.62, 0.20 } },                     -- DoT counts for Fire Power
     frostfireBolt   = { en = "Frostfire Bolt",    ids = { 401502, 1237312, 1237313 }, dur = 9, color = { 0.75, 0.45, 1 } },   -- has a DoT
     fireBlast       = { en = "Fire Blast",        ids = { 2136, 2137, 2138, 8412, 8413, 10197, 10199 } },   -- shares its 8 s cooldown with Ice Lance
     scorch          = { en = "Scorch",            ids = { 2948, 8444, 8445, 8446, 10205, 10206, 10207 } },
@@ -90,14 +91,19 @@ local DEFS = {
 Spells.DEFS = DEFS
 
 -- What each spec watches (how the spec is played on Forever):
---   Arcane  build Arcane Blast stacks (4, 18 s), spend them on Arcane Wrath (6 s cd) and on
---           Arcane Missiles when Missile Barrage procs; Arcane Power + Presence of Mind for burst.
+--   Arcane  build Arcane Blast stacks (4, 18 s window), Clearcasting on Arcane Blast, Arcane
+--           Missiles on Missile Barrage, Arcane Wrath at 3-4 stacks (twice per window). Level 60
+--           builds dip into Fire: Fire Blast on cooldown -> Heating Up -> Pyroblast at 4 stacks.
+--           Arcane Power / Presence of Mind at 4 stacks. (Warcraft Tavern Forever guides, Nov 2026)
 --   Fire    Fire Blast on cooldown and crits build Heating Up (3 stacks, -25% Pyroblast cast each;
 --           Pyroblast is a 6 s cast on Forever) -> Pyroblast; keep your
---           Fire Vulnerability at 5 stacks with Scorch; Ignite rolls; Combustion for burst.
+--           Fire Vulnerability (Improved Scorch) at 5 stacks; Fire Power rewards Fireball DoT,
+--           Improved Scorch, Ignite and Pyroblast DoT on the target; Combustion for burst.
+--           Frostfire variant: Frostfire Bolt filler, Ice Lance on Fingers of Frost.
 --   Frost   Frostbolt filler; Ice Lance (x4) on frozen targets (Frost Nova, Frostbite) or with
 --           Fingers of Frost charges; Frostbolt
---           builds Winter's Chill (5 stacks) for a big Cone of Cold; keep Ice Barrier up.
+--           builds Winter's Chill (5 stacks) for Cone of Cold (Winter's Chill build);
+--           Arcane Missiles on Missile Barrage; keep Arcane Intellect and Ice Barrier up at all times.
 -- Lists only name spells; ones you do not know are skipped.
 --   procs     buffs on you for the proc row (only shown while up)
 --   stacks    one stacking aura for the segmented bar: { key, unit, filter, max, full = hint text }
@@ -106,17 +112,17 @@ Spells.DEFS = DEFS
 --   card      spell shown on the proc card in edit mode
 Spells.SPEC_DATA = {
     arcane = {
-        procs = { "missileBarrage", "clearcasting", "presenceOfMind", "arcanePower" },
+        procs = { "missileBarrage", "clearcasting", "heatingUp", "arcanePower", "presenceOfMind" },
         stacks = { key = "arcaneBlast", unit = "player", filter = "HELPFUL", max = 4, full = "Spend: Arcane Wrath" },
         debuffs = {},
-        cooldowns = { "arcaneWrath", "arcanePower", "presenceOfMind" },
+        cooldowns = { "arcaneWrath", "fireBlast", "arcanePower", "presenceOfMind" },
         card = "arcaneMissiles",
     },
     fire = {
-        procs = { "combustion", "wakeOfFire", "clearcasting", "missileBarrage" },
+        procs = { "combustion", "wakeOfFire", "clearcasting", "missileBarrage", "fingersOfFrost" },
         stacks = { key = "heatingUp", unit = "player", filter = "HELPFUL", max = 3, full = "Pyroblast!" },
-        debuffs = { "fireVuln", "ignite", "pyroblast", "frostfireBolt" },
-        cooldowns = { "fireBlast", "combustion", "blastWave" },
+        debuffs = { "fireVuln", "fireball", "ignite", "pyroblast", "frostfireBolt" },
+        cooldowns = { "fireBlast", "iceLance", "combustion", "blastWave" },
         card = "pyroblast",
     },
     frost = {

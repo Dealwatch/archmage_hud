@@ -9,10 +9,12 @@ native aura slots, probe).
   sound and hint
 - Procs: only what is up right now (Missile Barrage, Clearcasting, Fingers of Frost, Combustion, Wake of Fire,
   Presence of Mind, Arcane Power), plus a big proc card while the client lights up a spell
-- Target debuffs with the real time left: Fire Vulnerability, Ignite, Pyroblast, Frostfire Bolt (Fire);
+- Target debuffs with the real time left: Fire Vulnerability, Fireball, Ignite, Pyroblast, Frostfire Bolt (Fire);
   Frost Nova, Frostbite (Frost: target frozen = Ice Lance window)
 - Cooldown row: spec cooldowns plus Frost Nova, Blink, Counterspell, Ice Block, Evocation
+- Arcane follows the Forever hybrid play: Heating Up in the proc row, Fire Blast in the cooldown row,
+  time left of the Arcane Blast window next to the stack bar
 - Mana bar
-- Reminders: Arcane Intellect, armor, mana gem, teleport/portal runes; absorb icon for Ice Barrier / Mana Shield
+- Reminders: Arcane Intellect, armor, Ice Barrier (Frost), mana gem, teleport/portal runes; absorb icon for Ice Barrier / Mana Shield
 - Forever spell IDs: Arcane Blast, Arcane Wrath, Missile Barrage, Heating Up, Fingers of Frost, Ice Lance,
   Frostfire Bolt, Ignite, Wake of Fire, Teleport: Dalaran

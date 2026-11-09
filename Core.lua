@@ -175,6 +175,7 @@ NS.defaults = {
     },
     reminders = {
         intellect = true,       -- Arcane Intellect / Brilliance missing
+        barrier = true,         -- Frost: Ice Barrier not up (keep it up at all times)
         armor = true,           -- no armor spell up
         gem = true,             -- no mana gem in the bags
         reagents = true,        -- low on teleport / portal runes

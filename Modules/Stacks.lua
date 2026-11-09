@@ -79,6 +79,10 @@ local function buildHost(spec, s)
             bar:SetStatusBarTexture(UI.WHITE)
             bar:SetStatusBarColor(UI:Accent())
             b:SetApplicationBar(bar, { minApplications = 0, maxApplications = s.max })
+            -- time left of the stack aura (Arcane Blast's 18 s window), right of the bar
+            local time = UI:Text(b, 10, UI.palette.text, "OUTLINE")
+            time:SetPoint("LEFT", b, "RIGHT", 4, 0)
+            b:SetDurationText(time)
             h.bar = bar
         end,
         onBuilt = function() St:Apply() end,
