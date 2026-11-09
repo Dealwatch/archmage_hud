@@ -71,13 +71,16 @@ local function buildCard()
     NS.Movers:Register(card, "proccard", "Proc card", NS.Layout.For("proccard"))
 end
 
--- The newest lit spell we know, shown on the card.
+-- The newest lit spell we know, shown on the card (else any other still lit).
+local newest
 function Procs:DrawCard()
     local db = NS.db.procs
-    local def
-    for id in pairs(lit) do
-        local key = Spells:KeyFor(id)
-        if key then def = Spells:Get(key) end
+    local def = newest and lit[newest] and Spells:Get(Spells:KeyFor(newest))
+    if not def then
+        for id in pairs(lit) do
+            local key = Spells:KeyFor(id)
+            if key then def = Spells:Get(key) end
+        end
     end
     if NS.editing and not def then def = Spells:Get(Spells.SPEC_DATA[NS.spec].card or "fireball") end
     local show = NS:IsEnabled("procs") and db.card and def ~= nil
@@ -90,6 +93,7 @@ end
 
 function Procs:Init()
     local size = NS.db.procs.size
+    self.size = size   -- the client lays the row out once; a new size applies after /reload
     frame = CreateFrame("Frame", "ArchmageHUDProcs", UIParent)
     frame:SetSize(4 * size + 12, size)
     frame:Hide()
@@ -116,6 +120,7 @@ function Procs:Init()
             UI:Sound("ALARM_CLOCK_WARNING_3")
         end
         lit[spellID] = true
+        newest = spellID
         self:DrawCard()
     end)
     NS:On("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", function(_, spellID)

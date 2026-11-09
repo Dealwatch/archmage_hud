@@ -119,6 +119,10 @@ local function readTarget()
         local d = Spells:Get(key)
         local ok, aura = pcall(C_UnitAuras.GetAuraDataBySpellName, "target", d.name, "HARMFUL|PLAYER")
         if ok and aura and not NS.IsSecret(aura) then
+            if not NS.db.learned.seen[key] then
+                NS.db.learned.seen[key] = true
+                NS:ApplyAll()   -- a talent row (Ignite, ...) may appear now
+            end
             local dur, exp = NS.Readable(aura.duration), NS.Readable(aura.expirationTime)
             if dur and exp and dur > 0 then
                 NS.db.learned.durations[d.name] = dur
@@ -169,6 +173,8 @@ end
 
 function Db:Apply()
     if not frame then return end
+    -- rows host aura containers: move and resize them only out of combat
+    if InCombatLockdown() then NS.AfterCombat("debuffsApply", function() self:Apply() end) return end
     local db = NS.db.debuffs
     local on = NS:IsEnabled("debuffs")
     local active = {}
@@ -185,7 +191,7 @@ function Db:Apply()
             n = n + 1
         end
     end
-    NS.AfterCombat("debuffsize", function() frame:SetSize(db.width, math.max(y - GAP, db.height)) end)
+    frame:SetSize(db.width, math.max(y - GAP, db.height))
     UI:SafeShow(frame, on and n > 0)
     for key, r in pairs(rows) do
         local d = Spells:Get(key)

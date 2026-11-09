@@ -110,6 +110,13 @@ end
 
 local afterCombat = {}
 
+-- True from PLAYER_REGEN_DISABLED on. InCombatLockdown() is still false while that
+-- event's handlers run, so nothing reacting to it may hide frames for real. Registered
+-- first, so the flag is set before any other handler and cleared before AfterCombat work.
+NS.combat = false
+NS:On("PLAYER_REGEN_DISABLED", function() NS.combat = true end)
+NS:On("PLAYER_REGEN_ENABLED", function() NS.combat = false end)
+
 function NS.AfterCombat(key, fn)
     if not InCombatLockdown() then
         fn()
@@ -187,6 +194,7 @@ NS.defaults = {
     },
     learned = {
         durations = {},         -- spell name -> seconds, learned from readable auras
+        seen = {},              -- debuff key -> true once seen from you on a target (talent effects)
     },
 }
 

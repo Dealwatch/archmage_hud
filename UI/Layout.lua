@@ -37,7 +37,7 @@ function Layout.Column()
     local db = NS.db
     local out = {}
     out.proccard = { "CENTER", "CENTER", 0, -40 }
-    local size = db.procs.size
+    local size = NS.modules.procs.size or db.procs.size   -- the size the row really has until /reload
     out.procs = { "TOP", "CENTER", 0, -65 }
     local y = -65 - size - GAP          -- y = top of the next free spot
 

@@ -264,7 +264,7 @@ local function buildPages()
         end
     end
 
-    p = newPage("stacks", "Stack Bar", "Arcane Blast stacks (Arcane), Fire Vulnerability (Fire), Winter's Chill (Frost).", "Interface\\Icons\\Spell_Arcane_Blast")
+    p = newPage("stacks", "Stack Bar", "Arcane Blast stacks (Arcane), Heating Up (Fire), Winter's Chill (Frost).", "Interface\\Icons\\Spell_Arcane_Blast")
     p.build = function(self, parent)
         local c = self:Add(W.Card(parent, "Stack bar", self.icon, bindModule("stacks")))
         c:Add(W.Slider(c, "Width", nil, 100, 420, 10, bind("stacks", "width"), px))

@@ -1,8 +1,8 @@
 --[[
     ArchmageHUD - stack bar
     One segmented bar for the stacking thing your spec watches (see
-    Spells.SPEC_DATA[spec].stacks), e.g. Arcane Blast stacks on you or the
-    Fire Vulnerability / Winter's Chill stacks on your target. Gold at full
+    Spells.SPEC_DATA[spec].stacks): Arcane Blast or Heating Up stacks on you,
+    Winter's Chill stacks on your target. Gold at full
     stacks, with an optional glow and sound.
 
     The client fills the bar itself through a native aura slot, so it is right
@@ -16,7 +16,7 @@ local UI, Spells = NS.UI, NS.Spells
 
 local St = NS:NewModule("stacks", {
     title = "Stack Bar",
-    desc = "Arcane Blast / Fire Vulnerability / Winter's Chill stacks",
+    desc = "Arcane Blast / Heating Up / Winter's Chill stacks",
     icon = "Interface\\Icons\\Spell_Arcane_Blast",
 })
 
@@ -200,6 +200,10 @@ end
 
 function St:Apply()
     if not frame then return end
+    if InCombatLockdown() then   -- geometry of an aura container host: only out of combat
+        NS.AfterCombat("stacksApply", function() self:Apply() end)
+        return self:Update()
+    end
     local s = def()
     local max = s and s.max or MAX_PIPS
     local w, h, pipW = geometry(max)

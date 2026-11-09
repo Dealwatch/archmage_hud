@@ -279,7 +279,8 @@ end
 
 function UI:SafeShow(frame, show)
     show = show and true or false
-    if InCombatLockdown() then
+    if InCombatLockdown() or NS.combat then
+        if show and not frame:IsShown() and not InCombatLockdown() then frame:Show() end
         frame:SetAlpha(show and 1 or 0)
     else
         frame:SetAlpha(1)
@@ -326,7 +327,7 @@ end
 function UI:UpdateFade(forceActive)
     if not NS.db then return end
     local a = NS.db.appearance
-    local active = forceActive or InCombatLockdown() or NS.editing
+    local active = forceActive or InCombatLockdown() or NS.combat or NS.editing
         or (NS.Options and NS.Options:IsShown()) or (a.showOnTarget and hostileTarget())
     if active then
         self.root:Show()

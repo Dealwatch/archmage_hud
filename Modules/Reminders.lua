@@ -66,7 +66,8 @@ function R:Update()
 
     for name, b in pairs(BUFFS) do
         local read = readBuff(b.keys)
-        if read ~= nil then state[name] = read end
+        if read ~= nil then state[name] = read
+        elseif not InCombatLockdown() then state[name] = nil end   -- secret out of combat (BG, encounter): unknown
         local def = knownAny(b.keys)
         if on and db[b.setting] and def and state[name] == false and not quiet and (not b.spec or b.spec == NS.spec) then
             A:Set(name, { title = "No " .. (def.name or def.en), text = "Rebuff yourself", icon = def.icon, priority = 4 })
@@ -139,7 +140,7 @@ function R:DrawAbsorb()
     UI:SafeShow(f, show)
     if not show then return end
     f.icon:SetTexture(def and def.icon or "Interface\\Icons\\Spell_Ice_Lament")
-    f:SetSize(db.absorbSize, db.absorbSize)
+    NS.AfterCombat("absorbSize", function() f:SetSize(db.absorbSize, db.absorbSize) end)
     if self.absorbNative:Active() then
         self.absorbNative:Restyle(function(b) b:SetSize(db.absorbSize, db.absorbSize) end)
     end

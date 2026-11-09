@@ -448,8 +448,11 @@ run("mana bar", function()
 end)
 
 run("combat with secrets", function()
-    fire("PLAYER_REGEN_DISABLED")
+    assert(NS.modules.stacks.state.stacks == 0, "pull with 0 stacks")
+    fire("PLAYER_REGEN_DISABLED")   -- lockdown is not on yet while this event runs
     combat = true
+    assert(_G.ArchmageHUDStacks:IsShown(), "stack bar stays shown (alpha) when the pull starts at 0 stacks")
+    assert(NS.UI.root:IsShown(), "HUD root shown in combat")
     fire("UNIT_SPELLCAST_SUCCEEDED", "player", "guid", 90002)   -- Frostfire Bolt
     fire("UNIT_SPELLCAST_SUCCEEDED", "player", "guid", 133)     -- Fireball
     fire("UNIT_POWER_FREQUENT", "player", "MANA")               -- secret mana in combat
@@ -484,6 +487,19 @@ run("leave combat", function()
     UnitCanAttack = function() return true end
     fire("PLAYER_TARGET_CHANGED")
     assert(NS.UI.root:IsShown() and NS.UI.root:GetAlpha() == 1, "enemy targeted out of combat: HUD shown")
+end)
+
+run("auras secret out of combat (battleground): no recursion, no false alerts", function()
+    local old = C_Secrets.ShouldAurasBeSecret
+    C_Secrets.ShouldAurasBeSecret = function() return true end
+    local oldRead = C_UnitAuras.GetAuraDataBySpellName
+    C_UnitAuras.GetAuraDataBySpellName = function() return nil end
+    NS:Send("MF_SPELLS")                       -- refilters every native slot
+    for _, h in pairs(NS.Native.slots) do h:Restyle(function() end) end
+    fire("UNIT_AURA", "player", {})
+    assert(not NS.Alerts.active.intellect and not NS.Alerts.active.armor, "unknown never warns")
+    C_Secrets.ShouldAurasBeSecret = old
+    C_UnitAuras.GetAuraDataBySpellName = oldRead
 end)
 
 run("reset", function()

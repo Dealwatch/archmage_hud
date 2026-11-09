@@ -20,6 +20,10 @@ native aura slots, probe).
 - Ignite, Fire Vulnerability and Frostbite rows appear once you have the talent (Ignite, Improved Scorch, Frostbite);
   spec detection is deterministic for hybrid and low-level talent sets
 - Mana bar
+- Robust for the first test: frames are never really hidden while combat starts (a pull at 0 stacks
+  kept the stack bar hidden), no endless retry when auras are secret out of combat (battlegrounds,
+  encounters), unreadable buffs out of combat never warn, aura frames are only moved/resized out of
+  combat, the proc card shows the newest lit spell, talent rows also appear once their debuff was seen
 - Reminders: Arcane Intellect, armor, Ice Barrier (Frost), mana gem, teleport/portal runes; absorb icon for Ice Barrier / Mana Shield
 - Forever spell IDs: Arcane Blast, Arcane Wrath, Missile Barrage, Heating Up, Fingers of Frost, Ice Lance,
   Frostfire Bolt, Ignite, Wake of Fire, Teleport: Dalaran

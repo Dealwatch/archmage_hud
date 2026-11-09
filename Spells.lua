@@ -14,7 +14,7 @@ local Spells = {}
 NS.Spells = Spells
 
 -- key = { en = English name, ids = candidate IDs, [aura = aura IDs if they differ],
---         [dur = default debuff seconds], [color = bar colour], [talent = ID of the talent that
+--         [dur = default debuff seconds], [from = cast that applies it], [color = bar colour], [talent = ID of the talent that
 --         causes this debuff: talent effects are never castable, so the row shows once you have the talent],
 --         [group = "teleport" | "portal"], [tree = spec, tier = talent depth for spec detection] }
 -- Forever-only IDs (400xxx, 12xxxxx, 13xxxxx) were checked against Wowhead's
@@ -50,7 +50,7 @@ local DEFS = {
     combustion      = { en = "Combustion",        ids = { 11129 }, aura = { 11129, 28682 }, tree = "fire", tier = 4 },
     wakeOfFire      = { en = "Wake of Fire",      ids = { 1312934 } },               -- after a kill: next Fire Blast +50% crit
     ignite          = { en = "Ignite",            ids = { 412538 }, talent = 11119, dur = 4, color = { 1, 0.30, 0.10 } },
-    fireVuln        = { en = "Fire Vulnerability", ids = { 22959 }, talent = 11095, dur = 30, color = { 1, 0.70, 0.25 } },   -- Improved Scorch, personal on Forever
+    fireVuln        = { en = "Fire Vulnerability", ids = { 22959 }, talent = 11095, from = "scorch", dur = 30, color = { 1, 0.70, 0.25 } },   -- Improved Scorch, personal on Forever
 
     -- Frost
     frostbolt       = { en = "Frostbolt",         ids = { 116, 205, 837, 7322, 8406, 8407, 8408, 10179, 10180, 10181, 25304 } },
@@ -276,7 +276,9 @@ function Spells:DebuffShown(key)
     local d = DEFS[key]
     if not d then return false end
     if d.known or NS.editing then return true end
-    return d.talent ~= nil and isKnown(d.talent)
+    if d.talent and isKnown(d.talent) then return true end
+    -- the client may not report passive talents as known: a debuff of yours we have seen counts too
+    return NS.db and NS.db.learned.seen[key] or false
 end
 
 function Spells:DebuffsFor(spec)
