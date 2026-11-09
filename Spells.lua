@@ -14,8 +14,8 @@ local Spells = {}
 NS.Spells = Spells
 
 -- key = { en = English name, ids = candidate IDs, [aura = aura IDs if they differ],
---         [dur = default debuff seconds], [color = bar colour], [core = talent effect that is
---         never in the spellbook: its debuff row shows for the spec anyway],
+--         [dur = default debuff seconds], [color = bar colour], [talent = ID of the talent that
+--         causes this debuff: talent effects are never castable, so the row shows once you have the talent],
 --         [group = "teleport" | "portal"], [tree = spec, tier = talent depth for spec detection] }
 -- Forever-only IDs (400xxx, 12xxxxx, 13xxxxx) were checked against Wowhead's
 -- Forever data and the wowsims/forever client dump (Nov 2026). Not on Forever
@@ -49,15 +49,15 @@ local DEFS = {
     blastWave       = { en = "Blast Wave",        ids = { 11113, 13018, 13019, 13020, 13021 }, tree = "fire", tier = 3 },
     combustion      = { en = "Combustion",        ids = { 11129 }, aura = { 11129, 28682 }, tree = "fire", tier = 4 },
     wakeOfFire      = { en = "Wake of Fire",      ids = { 1312934 } },               -- after a kill: next Fire Blast +50% crit
-    ignite          = { en = "Ignite",            ids = { 412538 }, core = true, dur = 4, color = { 1, 0.30, 0.10 } },
-    fireVuln        = { en = "Fire Vulnerability", ids = { 22959 }, core = true, dur = 30, color = { 1, 0.70, 0.25 } },   -- Improved Scorch, personal on Forever
+    ignite          = { en = "Ignite",            ids = { 412538 }, talent = 11119, dur = 4, color = { 1, 0.30, 0.10 } },
+    fireVuln        = { en = "Fire Vulnerability", ids = { 22959 }, talent = 11095, dur = 30, color = { 1, 0.70, 0.25 } },   -- Improved Scorch, personal on Forever
 
     -- Frost
     frostbolt       = { en = "Frostbolt",         ids = { 116, 205, 837, 7322, 8406, 8407, 8408, 10179, 10180, 10181, 25304 } },
     iceLance        = { en = "Ice Lance",         ids = { 1312002, 400640, 1240044, 1240045, 1240046, 1240047 }, tree = "frost", tier = 1 },
     fingersOfFrost  = { en = "Fingers of Frost",  ids = { 400647 }, aura = { 400669, 400670 } },   -- 1-2 charges
     frostNova       = { en = "Frost Nova",        ids = { 122, 865, 6131, 10230 }, dur = 8, color = { 0.55, 0.86, 1 } },   -- target frozen: Ice Lance x4
-    frostbite       = { en = "Frostbite",         ids = { 12494 }, core = true, dur = 5, color = { 0.40, 0.70, 1 } },
+    frostbite       = { en = "Frostbite",         ids = { 12494 }, talent = 11071, dur = 5, color = { 0.40, 0.70, 1 } },
     coneOfCold      = { en = "Cone of Cold",      ids = { 120, 8492, 10159, 10160, 10161 } },
     blizzard        = { en = "Blizzard",          ids = { 10, 6141, 8427, 10185, 10186, 10187 } },
     coldSnap        = { en = "Cold Snap",         ids = { 12472 }, tree = "frost", tier = 2 },
@@ -270,10 +270,13 @@ function Spells:CooldownsFor(spec)
     return out
 end
 
--- A debuff row shows when you can cast the spell, or it is a core talent effect of the spec.
+-- A debuff row shows when you can cast the spell, or you have the talent that causes it
+-- (Ignite 11119, Improved Scorch 11095, Frostbite 11071 - single-rank talents on Forever).
 function Spells:DebuffShown(key)
     local d = DEFS[key]
-    return d and (d.known or d.core or NS.editing) and true or false
+    if not d then return false end
+    if d.known or NS.editing then return true end
+    return d.talent ~= nil and isKnown(d.talent)
 end
 
 function Spells:DebuffsFor(spec)
@@ -281,12 +284,23 @@ function Spells:DebuffsFor(spec)
     return d and d.debuffs or {}
 end
 
--- Spec from the talent spells you know: the deepest one wins (31-point
--- talents beat 11-point ones). Falls back to the client's spec API, then Frost.
+-- Spec from the talent spells you know: each tree scores the depth of its known
+-- talents (31-point talents count most), the highest score wins; a tie goes to the
+-- deepest single talent, then Arcane > Fire > Frost. Falls back to the client's
+-- spec API, then Frost.
 function Spells:DetectSpec()
-    local best, depth = nil, 0
+    local score, deepest = {}, {}
     for _, def in pairs(DEFS) do
-        if def.tree and def.known and def.tier > depth then best, depth = def.tree, def.tier end
+        if def.tree and def.known then
+            score[def.tree] = (score[def.tree] or 0) + def.tier
+            deepest[def.tree] = math.max(deepest[def.tree] or 0, def.tier)
+        end
+    end
+    local best
+    for _, sp in ipairs(NS.SPECS) do
+        local k = sp.key
+        if score[k] and (not best or score[k] > score[best]
+            or (score[k] == score[best] and deepest[k] > deepest[best])) then best = k end
     end
     if best then return best end
     local idx = NS.Try(_G.GetSpecialization)

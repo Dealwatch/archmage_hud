@@ -17,7 +17,8 @@ native aura slots, probe).
 - Automatic layout per spec: the HUD column closes up around what the spec uses (Fire 5 debuff rows,
   Frost 2, Arcane none; switched-off modules and unknown spells take no space). Moved frames are saved
   per spec; right-click in edit mode returns a frame to the automatic layout
-- Ignite, Fire Vulnerability and Frostbite rows show for their spec (talent effects are never in the spellbook)
+- Ignite, Fire Vulnerability and Frostbite rows appear once you have the talent (Ignite, Improved Scorch, Frostbite);
+  spec detection is deterministic for hybrid and low-level talent sets
 - Mana bar
 - Reminders: Arcane Intellect, armor, Ice Barrier (Frost), mana gem, teleport/portal runes; absorb icon for Ice Barrier / Mana Shield
 - Forever spell IDs: Arcane Blast, Arcane Wrath, Missile Barrage, Heating Up, Fingers of Frost, Ice Lance,

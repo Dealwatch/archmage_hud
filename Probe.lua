@@ -159,6 +159,8 @@ local function probe()
         end))
     end
     add("target name:", try(UnitName, "target"))
+    add("talents known (Ignite 11119 / Improved Scorch 11095 / Frostbite 11071):",
+        try(IsPlayerSpell, 11119), "/", try(IsPlayerSpell, 11095), "/", try(IsPlayerSpell, 11071))
     add("")
     add("== Resolved spells (key: name / id / known)")
     local keys = {}

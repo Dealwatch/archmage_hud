@@ -153,6 +153,8 @@ Plus every Classic rank of the other spells (see `Spells.lua`). `/mage spells` p
 - Whether the client lights up spells for Heating Up / Missile Barrage / Fingers of Frost (proc card).
 - The mana bar's red tint and "hide at full" need readable mana; with secret mana the bar just stays blue and visible.
 - The debuff lists (Fire Vulnerability is personal on Forever and filtered as yours; Frostbite/Frost Nova count as yours).
+- Whether the client reports passive talents as known (`/mage probe` line "talents known"): the Ignite, Fire Vulnerability
+  and Frostbite rows appear only with the talent.
 
 ## Project layout
 

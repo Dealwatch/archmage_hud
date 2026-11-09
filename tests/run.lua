@@ -194,10 +194,10 @@ local SPELLS = {
     [1459] = "Arcane Intellect", [168] = "Frost Armor", [7302] = "Ice Armor", [1953] = "Blink", [2139] = "Counterspell",
     [122] = "Frost Nova", [12051] = "Evocation", [11426] = "Ice Barrier", [1463] = "Mana Shield",
     [759] = "Conjure Mana Agate", [3561] = "Teleport: Stormwind", [12536] = "Clearcasting", [12579] = "Winter's Chill",
-    [90002] = "Frostfire Bolt", [400625] = "Heating Up", [400573] = "Arcane Blast",
+    [90002] = "Frostfire Bolt", [11119] = "Ignite", [11095] = "Improved Scorch", [11071] = "Frostbite", [400625] = "Heating Up", [400573] = "Arcane Blast",
 }
 -- player knows these (spellbook, Forever-style unknown ID for Frostfire Bolt)
-local BOOK = { 133, 116, 5143, 2136, 2948, 11366, 11129, 1459, 168, 7302, 1953, 2139, 122, 12051, 1463, 759, 3561, 90002 }
+local BOOK = { 133, 116, 5143, 2136, 2948, 11366, 11129, 1459, 168, 7302, 1953, 2139, 122, 12051, 1463, 759, 3561, 90002, 11119, 11095, 11071 }
 
 C_Spell = {
     GetSpellName = function(id) return SPELLS[id] end,
@@ -357,7 +357,14 @@ run("automatic layout per spec", function()
         NS:SetSpec(spec)
         cd[spec] = L.Column().cooldowns[4]
         if spec == "fire" then assert(L.DebuffRows() == 5, "fire: 5 debuff rows (Ignite/Fire Vulnerability are talent effects) " .. L.DebuffRows()) end
-        if spec == "frost" then assert(L.DebuffRows() == 2, "frost: Frost Nova + Frostbite") end
+        if spec == "frost" then
+            assert(L.DebuffRows() == 2, "frost: Frost Nova + Frostbite (talent known)")
+            BOOK[#BOOK] = nil   -- unlearn Frostbite
+            NS.Spells:Resolve()
+            assert(L.DebuffRows() == 1, "no Frostbite row without the talent")
+            BOOK[#BOOK + 1] = 11071
+            NS.Spells:Resolve()
+        end
         if spec == "arcane" then assert(L.DebuffRows() == 0, "arcane: no debuff rows") end
     end
     assert(cd.arcane > cd.frost and cd.frost > cd.fire, "cooldown row closes up when a spec has fewer rows")
