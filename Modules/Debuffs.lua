@@ -136,7 +136,7 @@ function Db:Init()
     frame:Hide()
     UI:NativeHost(frame)
     self.frame = frame
-    NS.Movers:Register(frame, "debuffs", "Target debuffs", { "TOP", "CENTER", 0, -162 })   -- grows down
+    NS.Movers:Register(frame, "debuffs", "Target debuffs", NS.Layout.For("debuffs"))   -- grows down
 
     for _, sp in ipairs(NS.SPECS) do
         for _, key in ipairs(list(sp.key)) do
@@ -173,8 +173,7 @@ function Db:Apply()
     local on = NS:IsEnabled("debuffs")
     local active = {}
     for _, key in ipairs(list()) do
-        local d = Spells:Get(key)
-        if rows[key] and (d.known or NS.editing) then active[key] = true end   -- rows may still be building
+        if rows[key] and Spells:DebuffShown(key) then active[key] = true end   -- rows may still be building
     end
     local y, n = 0, 0
     for _, key in ipairs(list()) do

@@ -30,7 +30,7 @@ function Mana:Init()
     bar.text = UI:Text(bar, 10, UI.palette.text, "OUTLINE")
     bar.text:SetPoint("CENTER")
     bar.text:SetJustifyH("CENTER")
-    NS.Movers:Register(frame, "mana", "Mana", { "CENTER", "CENTER", 0, -150 })
+    NS.Movers:Register(frame, "mana", "Mana", NS.Layout.For("mana"))
 
     local function update() self:Update() end
     NS:OnUnit("UNIT_POWER_FREQUENT", "player", update)

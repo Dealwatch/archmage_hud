@@ -106,7 +106,7 @@ function R:BuildAbsorb()
     f.icon:SetDesaturated(true)
     f.icon:SetAlpha(0.35)
     self.absorbFrame = f
-    NS.Movers:Register(f, "absorb", "Absorb", { "CENTER", "CENTER", -140, -134 })   -- left of the column
+    NS.Movers:Register(f, "absorb", "Absorb", NS.Layout.For("absorb"))   -- left of the stack bar
     self.absorbNative = NS.Native:Slot({
         key = "absorb", parent = f, unit = "player", filter = "HELPFUL", level = 3,
         ids = function() return Spells:AuraIDs("iceBarrier", "manaShield") end,

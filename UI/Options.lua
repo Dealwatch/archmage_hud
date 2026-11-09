@@ -342,7 +342,7 @@ local function buildPages()
         layout:Add(W.Slider(layout, "HUD scale", nil, 0.5, 2.0, 0.05, bindAppearance("scale"), mult))
         layout:Add(W.Slider(layout, "Edit mode grid", nil, 0, 64, 4, bind("appearance", "grid"), px))
         layout:Add(W.ButtonRow(layout, "Frames", nil, "Open Edit Mode", function() NS.Movers:Toggle(true) end))
-        layout:Add(W.ButtonRow(layout, "Positions", "Puts every frame back where it started.", "Reset positions", function()
+        layout:Add(W.ButtonRow(layout, "Positions", "The HUD lays itself out for each spec. This drops every frame you moved (all specs) and goes back to the automatic layout.", "Auto layout", function()
             wipe(NS.db.positions); NS.Movers:RestoreAll()
         end))
 

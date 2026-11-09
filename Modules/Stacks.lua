@@ -131,7 +131,7 @@ function St:Init()
     self.hint:SetPoint("BOTTOMRIGHT", frame, "TOPRIGHT", 0, 3)
     self.hint:SetJustifyH("RIGHT")
     self.hint:Hide()
-    NS.Movers:Register(frame, "stacks", "Stacks", { "CENTER", "CENTER", 0, -118 })
+    NS.Movers:Register(frame, "stacks", "Stacks", NS.Layout.For("stacks"))
 
     for _, sp in ipairs(NS.SPECS) do
         local s = def(sp.key)

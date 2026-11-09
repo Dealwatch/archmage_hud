@@ -14,7 +14,8 @@ local Spells = {}
 NS.Spells = Spells
 
 -- key = { en = English name, ids = candidate IDs, [aura = aura IDs if they differ],
---         [dur = default debuff seconds], [color = bar colour],
+--         [dur = default debuff seconds], [color = bar colour], [core = talent effect that is
+--         never in the spellbook: its debuff row shows for the spec anyway],
 --         [group = "teleport" | "portal"], [tree = spec, tier = talent depth for spec detection] }
 -- Forever-only IDs (400xxx, 12xxxxx, 13xxxxx) were checked against Wowhead's
 -- Forever data and the wowsims/forever client dump (Nov 2026). Not on Forever
@@ -48,15 +49,15 @@ local DEFS = {
     blastWave       = { en = "Blast Wave",        ids = { 11113, 13018, 13019, 13020, 13021 }, tree = "fire", tier = 3 },
     combustion      = { en = "Combustion",        ids = { 11129 }, aura = { 11129, 28682 }, tree = "fire", tier = 4 },
     wakeOfFire      = { en = "Wake of Fire",      ids = { 1312934 } },               -- after a kill: next Fire Blast +50% crit
-    ignite          = { en = "Ignite",            ids = { 412538 }, dur = 4, color = { 1, 0.30, 0.10 } },
-    fireVuln        = { en = "Fire Vulnerability", ids = { 22959 }, dur = 30, color = { 1, 0.70, 0.25 } },   -- Improved Scorch, personal on Forever
+    ignite          = { en = "Ignite",            ids = { 412538 }, core = true, dur = 4, color = { 1, 0.30, 0.10 } },
+    fireVuln        = { en = "Fire Vulnerability", ids = { 22959 }, core = true, dur = 30, color = { 1, 0.70, 0.25 } },   -- Improved Scorch, personal on Forever
 
     -- Frost
     frostbolt       = { en = "Frostbolt",         ids = { 116, 205, 837, 7322, 8406, 8407, 8408, 10179, 10180, 10181, 25304 } },
     iceLance        = { en = "Ice Lance",         ids = { 1312002, 400640, 1240044, 1240045, 1240046, 1240047 }, tree = "frost", tier = 1 },
     fingersOfFrost  = { en = "Fingers of Frost",  ids = { 400647 }, aura = { 400669, 400670 } },   -- 1-2 charges
     frostNova       = { en = "Frost Nova",        ids = { 122, 865, 6131, 10230 }, dur = 8, color = { 0.55, 0.86, 1 } },   -- target frozen: Ice Lance x4
-    frostbite       = { en = "Frostbite",         ids = { 12494 }, dur = 5, color = { 0.40, 0.70, 1 } },
+    frostbite       = { en = "Frostbite",         ids = { 12494 }, core = true, dur = 5, color = { 0.40, 0.70, 1 } },
     coneOfCold      = { en = "Cone of Cold",      ids = { 120, 8492, 10159, 10160, 10161 } },
     blizzard        = { en = "Blizzard",          ids = { 10, 6141, 8427, 10185, 10186, 10187 } },
     coldSnap        = { en = "Cold Snap",         ids = { 12472 }, tree = "frost", tier = 2 },
@@ -267,6 +268,12 @@ function Spells:CooldownsFor(spec)
         end
     end
     return out
+end
+
+-- A debuff row shows when you can cast the spell, or it is a core talent effect of the spec.
+function Spells:DebuffShown(key)
+    local d = DEFS[key]
+    return d and (d.known or d.core or NS.editing) and true or false
 end
 
 function Spells:DebuffsFor(spec)

@@ -13,6 +13,7 @@ Spells.lua
 
 UI\Theme.lua
 UI\Movers.lua
+UI\Layout.lua
 UI\Alerts.lua
 UI\Native.lua
 

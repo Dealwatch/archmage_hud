@@ -40,7 +40,7 @@ Wowhead's Forever data. Not on Forever, so not tracked: Living Bomb, Icy Veins, 
 
 1. `/mage` opens the settings window. The overview has the spec switch, the state of your buffs and stacks,
    and one switch per module.
-2. `/mage edit` (or **Edit layout**) shows every frame with a label. Drag them where you want them, then click **Done**.
+2. Nothing to arrange: the HUD lays itself out for your spec. `/mage edit` only if you want something elsewhere.
 3. Fight something. The HUD shows in combat and while an enemy is targeted. Out of combat it is hidden;
    only alerts stay on screen.
 
@@ -50,7 +50,7 @@ Wowhead's Forever data. Not on Forever, so not tracked: Living Bomb, Icy Veins, 
 |---|---|
 | `/mage` (or `/mageforever`) | Settings window |
 | `/mage arcane` / `fire` / `frost` / `auto` | Switch spec |
-| `/mage edit` | Edit mode: drag frames (snaps to the grid, Shift = free), arrow keys nudge (Shift = 10px), right-click resets a frame |
+| `/mage edit` | Optional edit mode: drag frames (saved per spec, snaps to the grid, Shift = free), arrow keys nudge, right-click = back to the auto layout |
 | `/mage test` | Preview the alerts for 8 seconds |
 | `/mage probe` | Shows what Forever lets the addon read right now. Run it once out of combat and once **in combat** |
 | `/mage spells` | Copyable list of your spellbook with spell IDs |
@@ -58,22 +58,28 @@ Wowhead's Forever data. Not on Forever, so not tracked: Living Bomb, Icy Veins, 
 
 The addon also has an entry in the minimap's addon compartment.
 
-## Default layout
+## Layout: arranges itself per spec
+
+You do not have to arrange anything. The HUD column under your character lays itself out for the active spec
+and closes up: rows a spec does not use, modules you switched off and spells you do not know take no space.
 
 ```
           [Pyroblast!]                Proc card: while the client lights up a spell
-        [MB][CC][AP]                  Procs: only what is up right now (centred)
-Heating Up              Pyroblast!
-[=======|=======|       ]             Stack bar (Arcane Blast 4 / Heating Up 3 / Winter's Chill 5)
-[==============          ]            Mana
-[F][=============   22.1]             Your debuffs on the target, one bar each
-[I][======          2.3]
-
-[FB][CB][BW][FN][BL][CS][IB][EV]  [IB]
-            Cooldowns              Absorb (Ice Barrier / Mana Shield)
+        [Cb][WF][MB]                  Procs: only what is up right now (centred)
+     Heating Up         Pyroblast!
+[Ab] [=======|=======|=======] 16.2   Stack bar + time left; absorb icon on the left
+     [==============          ]       Mana
+     [F][============   24.3]         Your debuffs on the target: Fire 5 rows, Frost 2, Arcane none
+     [F][=====           4.4]
+     ...
+     [FB][CB][BW][FN][BL][CS][EV]     Cooldowns: spec first, then the shared ones
 ```
 
-Alerts stack at the top of the screen. All positions are saved per account.
+The stack bar (Arcane Blast, Heating Up, Winter's Chill) sits in the middle of your view because it drives every
+spec's next cast. Alerts stack at the top of the screen.
+
+If you do drag a frame in edit mode, that spot is saved **for that spec only**; right-click it in edit mode to
+hand it back to the automatic layout. Appearance > **Auto layout** drops all moved frames.
 
 ## Modules
 
@@ -139,7 +145,7 @@ Plus every Classic rank of the other spells (see `Spells.lua`). `/mage spells` p
 - `/mage` does nothing: the addon is not loaded. Check the folder path and the AddOns list at character select.
 - Wrong spec: pick it by hand in `/mage` or with `/mage fire` etc.
 - An alert or module gets in the way: switch it off in `/mage`, then keep testing the rest.
-- A frame is off screen: `/mage edit` > **Reset all**.
+- A frame is off screen: `/mage` > Appearance > **Auto layout**.
 
 ### Open points for the first test
 
@@ -154,7 +160,8 @@ Plus every Classic rank of the other spells (see `Spells.lua`). `/mage spells` p
 MageForever.toc     load order, interface 16001
 Core.lua            namespace, events, settings, spec switch, modules, slash commands, secret-value helpers
 Spells.lua          spell table, what each spec watches, spellbook lookup, spec detection
-UI/                 Theme (look, rounded textures), Movers (edit mode), Alerts, Native (aura container),
+UI/                 Theme (look, rounded textures), Movers (edit mode), Layout (automatic spec layout), Alerts,
+                    Native (aura container),
                     Widgets and Options (settings window)
 Modules/            Mana, Procs, Stacks, Debuffs, Cooldowns, Reminders
 Probe.lua           /mage probe and /mage spells

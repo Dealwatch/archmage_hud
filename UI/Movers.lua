@@ -12,6 +12,15 @@ local UI = NS.UI
 local Movers = { list = {}, byKey = {} }
 NS.Movers = Movers
 
+-- Frames you moved yourself, saved per spec (Fire and Frost can differ).
+-- Everything else follows the automatic spec layout (UI/Layout.lua).
+local function positions()
+    local spec = NS.spec or "all"
+    NS.db.positions[spec] = NS.db.positions[spec] or {}
+    return NS.db.positions[spec]
+end
+Movers.Positions = positions
+
 local function save(entry)
     local f = entry.frame
     local s = f:GetEffectiveScale() / UIParent:GetEffectiveScale()
@@ -19,24 +28,25 @@ local function save(entry)
     local ux, uy = UIParent:GetCenter()
     if not (cx and ux) then return end
     local x, y = cx - ux / s, cy - uy / s
-    NS.db.positions[entry.key] = { x = math.floor(x + 0.5), y = math.floor(y + 0.5) }
+    positions()[entry.key] = { x = math.floor(x + 0.5), y = math.floor(y + 0.5) }
 end
 
 local function place(entry)
     local f = entry.frame
-    local pos = NS.db and NS.db.positions[entry.key]
+    local pos = NS.db and positions()[entry.key]
     f:ClearAllPoints()
     if pos then
         f:SetPoint("CENTER", UIParent, "CENTER", pos.x, pos.y)
     else
         local d = entry.default
+        if type(d) == "function" then d = d() end
         f:SetPoint(d[1], UIParent, d[2] or d[1], d[3] or 0, d[4] or 0)
     end
 end
 
 local function snap(entry)
     local grid = NS.db.appearance.grid or 16
-    local pos = NS.db.positions[entry.key]
+    local pos = positions()[entry.key]
     if not pos or grid < 2 or IsShiftKeyDown() then return end
     pos.x = math.floor(pos.x / grid + 0.5) * grid
     pos.y = math.floor(pos.y / grid + 0.5) * grid
@@ -61,16 +71,18 @@ local function makeOverlay(entry)
         entry.frame:SetMovable(true)
         entry.frame:StartMoving()
         o.moving = true
+        Movers.dragging = true
     end)
     o:SetScript("OnMouseUp", function(_, button)
         if o.moving then
             o.moving = false
+            Movers.dragging = false
             entry.frame:StopMovingOrSizing()
             save(entry)
             snap(entry)
             place(entry)
         elseif button == "RightButton" then
-            NS.db.positions[entry.key] = nil
+            positions()[entry.key] = nil
             place(entry)
         end
     end)
@@ -90,7 +102,8 @@ function Movers:Select(entry)
 end
 
 -- frame: the HUD frame; key: saved position key; label: overlay text;
--- default: { point, relativePoint, x, y } on UIParent. HUD frames join the
+-- default: { point, relativePoint, x, y } on UIParent, or a function returning
+-- one (the automatic spec layout). HUD frames join the
 -- fading HUD root unless keepParent is set (alerts must never fade).
 function Movers:Register(frame, key, label, default, keepParent)
     if not keepParent then frame:SetParent(UI.root) end
@@ -108,6 +121,9 @@ function Movers:RestoreAll()
         NS.AfterCombat("place" .. e.key, function() place(e) end)
     end
 end
+
+-- the automatic layout depends on spec, known spells and enabled modules
+NS:On("MF_APPLIED", function() if not Movers.dragging then Movers:RestoreAll() end end)
 
 ---------------------------------------------------------------------------
 -- Grid and header
@@ -190,12 +206,12 @@ local function buildHeader()
     title:SetText("Edit Mode")
     local sub = UI:Text(header, 11, UI.palette.textDim)
     sub:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -3)
-    sub:SetText("Drag frames - arrows nudge - right-click resets - Shift = free")
+    sub:SetText("Only needed if you want it different: saved per spec - right-click = auto layout")
 
     local done = headerButton(header, "Done", true, function() Movers:Toggle(false) end)
     done:SetPoint("RIGHT", -12, 0)
     local reset = headerButton(header, "Reset all", false, function()
-        wipe(NS.db.positions)
+        wipe(positions())
         for _, e in ipairs(Movers.list) do place(e) end
     end)
     reset:SetPoint("RIGHT", done, "LEFT", -8, 0)
@@ -223,7 +239,7 @@ local function buildHeader()
         if e and (dx ~= 0 or dy ~= 0) then
             self:SetPropagateKeyboardInput(false)
             save(e)
-            local pos = NS.db.positions[e.key]
+            local pos = positions()[e.key]
             pos.x, pos.y = pos.x + dx, pos.y + dy
             place(e)
         else

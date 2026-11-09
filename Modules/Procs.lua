@@ -68,7 +68,7 @@ local function buildCard()
     card.text:SetPoint("LEFT", card.iconFrame, "RIGHT", 8, 0)
     card.text:SetPoint("RIGHT", -8, 0)
     card:Hide()
-    NS.Movers:Register(card, "proccard", "Proc card", { "CENTER", "CENTER", 0, -40 })
+    NS.Movers:Register(card, "proccard", "Proc card", NS.Layout.For("proccard"))
 end
 
 -- The newest lit spell we know, shown on the card.
@@ -105,7 +105,7 @@ function Procs:Init()
         f:Hide()
         preview[i] = f
     end
-    NS.Movers:Register(frame, "procs", "Procs", { "CENTER", "CENTER", 0, -80 })
+    NS.Movers:Register(frame, "procs", "Procs", NS.Layout.For("procs"))
     buildCard()
 
     for _, sp in ipairs(NS.SPECS) do buildHost(sp.key, size) end

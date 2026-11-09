@@ -350,6 +350,30 @@ run("spec switch", function()
     NS.Options:Toggle()
 end)
 
+run("automatic layout per spec", function()
+    local L = NS.Layout
+    local cd = {}
+    for _, spec in ipairs({ "fire", "frost", "arcane" }) do
+        NS:SetSpec(spec)
+        cd[spec] = L.Column().cooldowns[4]
+        if spec == "fire" then assert(L.DebuffRows() == 5, "fire: 5 debuff rows (Ignite/Fire Vulnerability are talent effects) " .. L.DebuffRows()) end
+        if spec == "frost" then assert(L.DebuffRows() == 2, "frost: Frost Nova + Frostbite") end
+        if spec == "arcane" then assert(L.DebuffRows() == 0, "arcane: no debuff rows") end
+    end
+    assert(cd.arcane > cd.frost and cd.frost > cd.fire, "cooldown row closes up when a spec has fewer rows")
+    NS:SetModuleEnabled("mana", false)
+    assert(L.Column().cooldowns[4] > cd.arcane, "switched-off module takes no space")
+    NS:SetModuleEnabled("mana", true)
+    -- a moved frame is saved for that spec only
+    NS.Movers.Positions().mana = { x = 10, y = -300 }
+    NS:SetSpec("frost")
+    assert(NS.Movers.Positions().mana == nil, "frost keeps the automatic spot")
+    NS:SetSpec("arcane")
+    assert(NS.Movers.Positions().mana.y == -300, "arcane keeps your spot")
+    NS.Movers.Positions().mana = nil
+    NS:SetSpec("auto")
+end)
+
 run("settings change", function()
     NS.db.appearance.accent = "arcane"
     NS.UI:ApplyAppearance()
