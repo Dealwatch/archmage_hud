@@ -1,5 +1,5 @@
 --[[
-    MageForever - theme
+    ArchmageHUD - theme
     Palette, accents, fonts and the small drawing helpers every frame uses:
     flat surfaces with 1px borders, bars, icons and a pulse glow.
 ]]
@@ -312,7 +312,7 @@ end
 -- secure buttons); in combat it is always shown.
 ---------------------------------------------------------------------------
 
-UI.root = CreateFrame("Frame", "MageForeverHUD", UIParent)
+UI.root = CreateFrame("Frame", "ArchmageHUDHUD", UIParent)
 UI.root:SetAllPoints(UIParent)
 
 local function hostileTarget()

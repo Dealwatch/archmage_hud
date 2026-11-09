@@ -1,5 +1,5 @@
 --[[
-    MageForever - automatic layout
+    ArchmageHUD - automatic layout
     The HUD column under your character is laid out for the active spec, so
     you never have to arrange it: rows that a spec does not use (no debuffs
     for Arcane, two for Frost, five for Fire), modules you switched off and

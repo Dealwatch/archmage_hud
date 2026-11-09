@@ -1,7 +1,7 @@
 # Changelog
 
 ## 0.1.0
-First test build for WoW Forever. Built on the Shammy Forever framework (settings window, edit mode, alerts,
+First test build for WoW Forever, as Archmage HUD (`/mage` or `/amh`). Built on the Shammy Forever framework (settings window, edit mode, alerts,
 native aura slots, probe).
 - Spec switch: Auto (from your talents), Arcane, Fire, Frost. In the overview, or `/mage arcane|fire|frost|auto`.
   Procs, stack bar, debuffs, cooldowns and the accent colour follow the spec

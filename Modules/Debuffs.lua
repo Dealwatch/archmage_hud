@@ -1,5 +1,5 @@
 --[[
-    MageForever - target debuffs
+    ArchmageHUD - target debuffs
     One bar per debuff your spec keeps on the target (Spells.SPEC_DATA[spec]
     .debuffs), e.g. Living Bomb or Ignite: icon, time left and stacks.
 
@@ -131,7 +131,7 @@ local function readTarget()
 end
 
 function Db:Init()
-    frame = CreateFrame("Frame", "MageForeverDebuffs", UIParent)
+    frame = CreateFrame("Frame", "ArchmageHUDDebuffs", UIParent)
     frame:SetSize(NS.db.debuffs.width, NS.db.debuffs.height)
     frame:Hide()
     UI:NativeHost(frame)

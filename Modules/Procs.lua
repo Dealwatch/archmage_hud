@@ -1,5 +1,5 @@
 --[[
-    MageForever - procs
+    ArchmageHUD - procs
       * One centred row that shows only what is up right now: the procs and
         burst buffs of your spec (Spells.SPEC_DATA[spec].procs), each with its
         time-left swipe and stacks. The client fills the row itself (native
@@ -59,7 +59,7 @@ local function buildHost(spec, size)
 end
 
 local function buildCard()
-    card = CreateFrame("Frame", "MageForeverProcCard", UIParent)
+    card = CreateFrame("Frame", "ArchmageHUDProcCard", UIParent)
     card:SetSize(190, 40)
     UI:Skin(card, UI.palette.surface, UI.palette.border, "lg")
     card.iconFrame = UI:Icon(card, 32)
@@ -90,7 +90,7 @@ end
 
 function Procs:Init()
     local size = NS.db.procs.size
-    frame = CreateFrame("Frame", "MageForeverProcs", UIParent)
+    frame = CreateFrame("Frame", "ArchmageHUDProcs", UIParent)
     frame:SetSize(4 * size + 12, size)
     frame:Hide()
     UI:NativeHost(frame)

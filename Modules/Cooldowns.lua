@@ -1,5 +1,5 @@
 --[[
-    MageForever - cooldown row
+    ArchmageHUD - cooldown row
     One row of icons for the cooldowns of your spec plus the ones every mage
     uses (Spells:CooldownsFor). Only spells you know are shown.
     GetSpellCooldownDuration returns a duration object the cooldown swirl
@@ -75,7 +75,7 @@ function Cd:Update()
 end
 
 function Cd:Init()
-    row = CreateFrame("Frame", "MageForeverCooldowns", UIParent)
+    row = CreateFrame("Frame", "ArchmageHUDCooldowns", UIParent)
     row:SetSize(100, NS.db.cooldowns.size)
     row:Hide()
     self.frame = row

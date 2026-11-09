@@ -1,5 +1,5 @@
 --[[
-    MageForever - reminders
+    ArchmageHUD - reminders
       * Arcane Intellect / Arcane Brilliance missing.
       * No armor spell up (Frost / Ice / Mage Armor, whichever you know).
       * Frost: Ice Barrier not up (guides: keep it up at all times).

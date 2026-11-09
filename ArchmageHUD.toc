@@ -1,12 +1,12 @@
 ## Interface: 16001
-## Title: |cff69ccf0Mage|r|cffe8eaedForever|r
-## Notes: Mage HUD for WoW Forever: procs, stacks, target debuffs, cooldowns, mana and reminders for Arcane, Fire and Frost.
+## Title: |cff69ccf0Archmage|r |cffe8eaedHUD|r
+## Notes: Arcane, Fire & Frost HUD for WoW Forever: procs, stacks, target debuffs, cooldowns, mana and reminders for Arcane, Fire and Frost.
 ## Author: Dealwatch
 ## Version: 0.1.0
-## SavedVariables: MageForeverDB
+## SavedVariables: ArchmageHUDDB
 ## IconTexture: Interface\Icons\Spell_Holy_MagicalSentry
 ## Category: Combat
-## AddonCompartmentFunc: MageForever_OnAddonCompartmentClick
+## AddonCompartmentFunc: ArchmageHUD_OnAddonCompartmentClick
 
 Core.lua
 Spells.lua

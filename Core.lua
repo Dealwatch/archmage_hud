@@ -1,5 +1,5 @@
 --[[
-    MageForever - core
+    ArchmageHUD - core
     Namespace, event bus, saved settings, module registry, slash commands and
     the secret-value helpers every module uses.
 
@@ -11,10 +11,10 @@
 ]]
 
 local ADDON, NS = ...
-_G.MageForever = NS
+_G.ArchmageHUD = NS
 
 NS.ADDON = ADDON
-NS.TITLE = "Mage Forever"
+NS.TITLE = "Archmage HUD"
 NS.VERSION = (C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(ADDON, "Version")) or "dev"
 NS.MEDIA = "Interface\\AddOns\\" .. ADDON .. "\\"
 
@@ -54,7 +54,7 @@ end
 ---------------------------------------------------------------------------
 
 function NS.Print(...)
-    print("|cff69ccf0Mage|r|cffe8eaedForever|r:", ...)
+    print("|cff69ccf0Archmage|r |cffe8eaedHUD|r:", ...)
 end
 
 ---------------------------------------------------------------------------
@@ -208,14 +208,14 @@ local function copy(src)
 end
 
 function NS:InitDB()
-    if type(_G.MageForeverDB) ~= "table" then _G.MageForeverDB = {} end
-    fill(_G.MageForeverDB, self.defaults)
-    self.db = _G.MageForeverDB
+    if type(_G.ArchmageHUDDB) ~= "table" then _G.ArchmageHUDDB = {} end
+    fill(_G.ArchmageHUDDB, self.defaults)
+    self.db = _G.ArchmageHUDDB
 end
 
 function NS:ResetDB()
-    _G.MageForeverDB = copy(self.defaults)
-    self.db = _G.MageForeverDB
+    _G.ArchmageHUDDB = copy(self.defaults)
+    self.db = _G.ArchmageHUDDB
 end
 
 ---------------------------------------------------------------------------
@@ -364,9 +364,9 @@ commands["help"] = function()
     print("  /mage reset confirm - reset everything")
 end
 
-SLASH_MAGEFOREVER1 = "/mage"
-SLASH_MAGEFOREVER2 = "/mageforever"
-SlashCmdList.MAGEFOREVER = function(msg)
+SLASH_ARCHMAGEHUD1 = "/mage"
+SLASH_ARCHMAGEHUD2 = "/amh"
+SlashCmdList.ARCHMAGEHUD = function(msg)
     msg = (msg or ""):lower()
     local cmd, arg = msg:match("^%s*(%S*)%s*(.-)%s*$")
     local fn = commands[cmd or ""] or commands.help
@@ -374,6 +374,6 @@ SlashCmdList.MAGEFOREVER = function(msg)
     fn(arg)
 end
 
-function _G.MageForever_OnAddonCompartmentClick()
+function _G.ArchmageHUD_OnAddonCompartmentClick()
     commands[""]()
 end

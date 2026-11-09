@@ -1,5 +1,5 @@
 --[[
-    MageForever - settings window (/mage)
+    ArchmageHUD - settings window (/mage)
     Navigation on the left, pages of cards on the right. Every page is built
     once and refreshed whenever it is shown or a setting changes.
 ]]
@@ -101,7 +101,7 @@ local function heroBlock(parent)
     function h:Layout(width) self:SetSize(width, 130) return 130 end
     function h:Refresh()
         local r, g, b = UI:Accent()
-        self.title:SetText(string.format("|cff%02x%02x%02xMage|r Forever", r * 255, g * 255, b * 255))
+        self.title:SetText(string.format("|cff%02x%02x%02xArchmage|r HUD", r * 255, g * 255, b * 255))
         self.logo.icon:SetTexture(NS:SpecInfo().icon)
         self.ver:SetText("v" .. NS.VERSION)
         local build, iface, forever = buildInfo()
@@ -321,7 +321,7 @@ local function buildPages()
         c:Add(W.Slider(c, "Snooze on right-click", nil, 15, 600, 15, bind("reminders", "snooze"), secs))
     end
 
-    p = newPage("appearance", "Appearance", "Look and feel for every Mage Forever frame.", "Interface\\Icons\\Spell_Nature_EnchantArmor")
+    p = newPage("appearance", "Appearance", "Look and feel for every Archmage HUD frame.", "Interface\\Icons\\Spell_Nature_EnchantArmor")
     p.build = function(self, parent)
         local look = self:Add(W.Card(parent, "Look", "Interface\\Icons\\INV_Misc_Gem_Sapphire_02"))
         local accents = {}
@@ -379,7 +379,7 @@ local function navButton(page, i)
 end
 
 local function build()
-    win = CreateFrame("Frame", "MageForeverOptions", UIParent)
+    win = CreateFrame("Frame", "ArchmageHUDOptions", UIParent)
     win:SetSize(WIN_W, WIN_H)
     win:SetPoint("CENTER")
     win:SetFrameStrata("HIGH")
@@ -392,7 +392,7 @@ local function build()
     win:SetScript("OnDragStop", win.StopMovingOrSizing)
     UI:Skin(win, P.surface, P.border, "lg")
     UI:Shadow(win)
-    tinsert(UISpecialFrames, "MageForeverOptions")
+    tinsert(UISpecialFrames, "ArchmageHUDOptions")
 
     -- navigation
     win.nav = CreateFrame("Frame", nil, win)

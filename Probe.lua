@@ -1,10 +1,10 @@
 --[[
-    MageForever - diagnostics
+    ArchmageHUD - diagnostics
     /mage probe   what the client lets addons read right now (run it once out
                   of combat and once in combat while hitting something)
     /mage spells  every spell in your spellbook with its ID
     Both open a copy box and are also saved in the SavedVariables file
-    (WTF\Account\<account>\SavedVariables\MageForever.lua).
+    (WTF\Account\<account>\SavedVariables\ArchmageHUD.lua).
 ]]
 
 local _, NS = ...
@@ -14,7 +14,7 @@ local box
 
 local function copyBox(title, text)
     if not box then
-        box = CreateFrame("Frame", "MageForeverCopy", UIParent)
+        box = CreateFrame("Frame", "ArchmageHUDCopy", UIParent)
         box:SetSize(640, 460)
         box:SetPoint("CENTER")
         box:SetFrameStrata("DIALOG")
@@ -29,7 +29,7 @@ local function copyBox(title, text)
         box.title:SetPoint("TOPLEFT", 16, -14)
         box.hint = UI:Text(box, 11, UI.palette.textDim)
         box.hint:SetPoint("TOPLEFT", box.title, "BOTTOMLEFT", 0, -4)
-        box.hint:SetText("Ctrl+A, Ctrl+C to copy. Also saved in SavedVariables\\MageForever.lua")
+        box.hint:SetText("Ctrl+A, Ctrl+C to copy. Also saved in SavedVariables\\ArchmageHUD.lua")
         local close = CreateFrame("Button", nil, box)
         close:SetSize(24, 24)
         close:SetPoint("TOPRIGHT", -10, -10)
@@ -53,7 +53,7 @@ local function copyBox(title, text)
             self:SetVerticalScroll(math.min(max, math.max(0, self:GetVerticalScroll() - d * 40)))
         end)
         box.eb = eb
-        tinsert(UISpecialFrames, "MageForeverCopy")
+        tinsert(UISpecialFrames, "ArchmageHUDCopy")
     end
     box.title:SetText(title)
     box.eb:SetText(text)
@@ -82,7 +82,7 @@ local function probe()
     local function add(...) L[#L + 1] = table.concat({ ... }, " ") end
     local build, _, _, iface = GetBuildInfo()
     local inCombat = InCombatLockdown()
-    add("Mage Forever", NS.VERSION, "| build", v(build), "| interface", v(iface), "| locale", GetLocale())
+    add("Archmage HUD", NS.VERSION, "| build", v(build), "| interface", v(iface), "| locale", GetLocale())
     add("level", v(UnitLevel("player")), "| in combat:", tostring(inCombat), "| time", date("%Y-%m-%d %H:%M:%S"))
     add("issecretvalue:", tostring(_G.issecretvalue ~= nil))
     if C_Secrets then

@@ -1,4 +1,4 @@
-package-as: MageForever
+package-as: ArchmageHUD
 
 ignore:
   - tests

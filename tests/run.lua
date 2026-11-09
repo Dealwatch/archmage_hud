@@ -283,12 +283,12 @@ end
 
 -- load the addon in TOC order
 local NS = {}
-local toc = assert(io.open(ROOT .. "MageForever.toc")):read("*a")
+local toc = assert(io.open(ROOT .. "ArchmageHUD.toc")):read("*a")
 for line in toc:gmatch("[^\r\n]+") do
     if not line:match("^##") and line:match("%.lua$") then
         local path = ROOT .. line:gsub("\\", "/")
         local chunk = assert(loadfile(path))
-        chunk("MageForever", NS)
+        chunk("ArchmageHUD", NS)
     end
 end
 
@@ -324,11 +324,11 @@ run("login", function()
     assert(NS.Native.slots.debuff_ignite.container._ids[412538], "forever ignite id in filter")
     assert(NS.Native.slots.debuff_fireball:Active(), "fireball dot bar (Fire Power)")
     assert(NS.Native.slots.absorb.container._ids[13033] and NS.Native.slots.absorb.container._ids[10193], "absorb ranks in filter")
-    assert(_G.MageForeverAlerts:GetParent() == UIParent, "alerts stay outside the HUD root")
+    assert(_G.ArchmageHUDAlerts:GetParent() == UIParent, "alerts stay outside the HUD root")
 end)
 
 run("settings window, every page", function()
-    SlashCmdList.MAGEFOREVER("")
+    SlashCmdList.ARCHMAGEHUD("")
     for _, key in ipairs({ "overview", "mana", "procs", "stacks", "debuffs", "cooldowns", "reminders", "appearance" }) do
         NS.Options:Show(key)
     end
@@ -337,7 +337,7 @@ end)
 
 run("spec switch", function()
     for _, spec in ipairs({ "arcane", "frost", "fire", "auto" }) do
-        SlashCmdList.MAGEFOREVER(spec)
+        SlashCmdList.ARCHMAGEHUD(spec)
         NS.Options:Show("overview")
         NS.Options:Show("procs")
         NS.Options:Show("debuffs")
@@ -384,11 +384,11 @@ run("settings change", function()
 end)
 
 run("edit mode", function()
-    SlashCmdList.MAGEFOREVER("edit")
+    SlashCmdList.ARCHMAGEHUD("edit")
     tick(0.1)
-    assert(_G.MageForeverProcCard:IsShown(), "proc card preview in edit mode")
+    assert(_G.ArchmageHUDProcCard:IsShown(), "proc card preview in edit mode")
     NS.Movers:Toggle(false)
-    assert(not _G.MageForeverProcCard:IsShown(), "proc card hidden again")
+    assert(not _G.ArchmageHUDProcCard:IsShown(), "proc card hidden again")
 end)
 
 run("out of combat reminders", function()
@@ -407,9 +407,9 @@ run("out of combat reminders", function()
     bag[17031] = 1
     fire("BAG_UPDATE_DELAYED")
     assert(NS.Alerts.active.runes, "low on runes")
-    SlashCmdList.MAGEFOREVER("probe")
-    SlashCmdList.MAGEFOREVER("spells")
-    SlashCmdList.MAGEFOREVER("test")
+    SlashCmdList.ARCHMAGEHUD("probe")
+    SlashCmdList.ARCHMAGEHUD("spells")
+    SlashCmdList.ARCHMAGEHUD("test")
 end)
 
 run("stacks out of combat", function()
@@ -433,10 +433,10 @@ end)
 run("mana bar", function()
     mana = 1000
     NS.modules.mana:Update()
-    assert(not _G.MageForeverMana:IsShown(), "hidden at full mana out of combat")
+    assert(not _G.ArchmageHUDMana:IsShown(), "hidden at full mana out of combat")
     mana = 200
     NS.modules.mana:Update()
-    assert(_G.MageForeverMana:IsShown(), "shown when not full")
+    assert(_G.ArchmageHUDMana:IsShown(), "shown when not full")
     assert(NS.modules.mana.Fraction() == 0.2, "fraction")
 end)
 
@@ -446,7 +446,7 @@ run("combat with secrets", function()
     fire("UNIT_SPELLCAST_SUCCEEDED", "player", "guid", 90002)   -- Frostfire Bolt
     fire("UNIT_SPELLCAST_SUCCEEDED", "player", "guid", 133)     -- Fireball
     fire("UNIT_POWER_FREQUENT", "player", "MANA")               -- secret mana in combat
-    assert(_G.MageForeverDebuffs:IsShown() and _G.MageForeverDebuffs:GetAlpha() == 1, "debuff bars")
+    assert(_G.ArchmageHUDDebuffs:IsShown() and _G.ArchmageHUDDebuffs:GetAlpha() == 1, "debuff bars")
     assert(NS.UI.root:GetAlpha() == 1, "HUD not faded in combat")
     fire("SPELL_UPDATE_COOLDOWN")
     fire("UNIT_AURA", "player", {})
@@ -456,11 +456,11 @@ run("combat with secrets", function()
     assert(not NS.Alerts.active.intellect, "secret buffs never warn")
     -- Hot Streak: the client lights Pyroblast
     fire("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", 11366)
-    assert(_G.MageForeverProcCard:IsShown() and _G.MageForeverProcCard.text:GetText() == "Pyroblast!", "proc card")
+    assert(_G.ArchmageHUDProcCard:IsShown() and _G.ArchmageHUDProcCard.text:GetText() == "Pyroblast!", "proc card")
     fire("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", 11366)
-    assert(not _G.MageForeverProcCard:IsShown(), "proc card gone")
+    assert(not _G.ArchmageHUDProcCard:IsShown(), "proc card gone")
     tick(0.2)
-    SlashCmdList.MAGEFOREVER("probe")
+    SlashCmdList.ARCHMAGEHUD("probe")
     NS.Options:Show("overview")
     tick(1)
 end)
@@ -470,7 +470,7 @@ run("leave combat", function()
     fire("PLAYER_REGEN_ENABLED")
     tick(2)
     assert(NS.db.probe.combat and NS.db.probe.outOfCombat and NS.db.probe.spells, "probe saved")
-    _G.MageForeverOptions:Hide()   -- an open settings window keeps the HUD visible
+    _G.ArchmageHUDOptions:Hide()   -- an open settings window keeps the HUD visible
     UnitCanAttack = function() return false end
     fire("PLAYER_TARGET_CHANGED")
     assert(not NS.UI.root:IsShown(), "HUD hidden out of combat without an enemy")
@@ -480,7 +480,7 @@ run("leave combat", function()
 end)
 
 run("reset", function()
-    SlashCmdList.MAGEFOREVER("reset confirm")
+    SlashCmdList.ARCHMAGEHUD("reset confirm")
     assert(NS.db.spec == "auto", "reset spec")
 end)
 

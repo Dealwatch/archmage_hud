@@ -1,6 +1,6 @@
-# Mage Forever
+# Archmage HUD
 
-Mage HUD for **WoW Forever** (interface 16001, build 1.60.1). Working title.
+Arcane, Fire & Frost HUD for **WoW Forever** (interface 16001, build 1.60.1).
 
 One clean HUD for Arcane, Fire and Frost. It shows procs, your spec's stacks, your debuffs on the target,
 cooldowns and mana, plus reminders for Intellect, armor, mana gem and runes. You can switch the spec, and every
@@ -13,11 +13,11 @@ Same look and handling as *Shammy Forever* (settings window, edit mode, alerts).
 
 ## Install
 
-1. Download `MageForever-<version>.zip` (from a release, or the zip you were sent).
+1. Download `ArchmageHUD-<version>.zip` (from a release, or the zip you were sent).
 2. Unzip it into `World of Warcraft\_forever_\Interface\AddOns\` so that you get
-   `...\AddOns\MageForever\MageForever.toc` (not `MageForever\MageForever\...`).
+   `...\AddOns\ArchmageHUD\ArchmageHUD.toc` (not `ArchmageHUD\ArchmageHUD\...`).
 3. Restart the game completely. A `/reload` is not enough for a new addon.
-4. Character select > **AddOns**: make sure *Mage Forever* is ticked.
+4. Character select > **AddOns**: make sure *Archmage HUD* is ticked.
 
 ## Specs
 
@@ -48,7 +48,7 @@ Wowhead's Forever data. Not on Forever, so not tracked: Living Bomb, Icy Veins, 
 
 | Command | |
 |---|---|
-| `/mage` (or `/mageforever`) | Settings window |
+| `/mage` (or `/amh`) | Settings window |
 | `/mage arcane` / `fire` / `frost` / `auto` | Switch spec |
 | `/mage edit` | Optional edit mode: drag frames (saved per spec, snaps to the grid, Shift = free), arrow keys nudge, right-click = back to the auto layout |
 | `/mage test` | Preview the alerts for 8 seconds |
@@ -100,7 +100,7 @@ reset positions.
 
 Forever runs the modern engine. There is no combat log, and in combat auras and cooldown timings reach addons
 as *secret values*: they can be shown but not compared or calculated with. Your own mana is secret too.
-Mage Forever therefore
+Archmage HUD therefore
 
 - lets the client draw: Blizzard's native aura container (`Blizzard_AuraContainer`) fills the stack bar,
   the proc row, the debuff bars and the absorb icon, even while the values are secret;
@@ -137,7 +137,7 @@ Plus every Classic rank of the other spells (see `Spells.lua`). `/mage spells` p
 3. Fight a few mobs for 2-3 minutes in your spec: proc row, stack bar (does it fill and turn gold?), proc card,
    debuff bars (Fire), cooldown swirls, absorb icon after Ice Barrier / Mana Shield.
 4. **In combat**, with a few stacks up: `/mage probe`. Screenshot the HUD.
-5. `/reload`, then send `World of Warcraft\_forever_\WTF\Account\<account>\SavedVariables\MageForever.lua`
+5. `/reload`, then send `World of Warcraft\_forever_\WTF\Account\<account>\SavedVariables\ArchmageHUD.lua`
    (it holds both probes and the spell list), the screenshots and any Lua errors.
 
 ### Troubleshooting
@@ -157,7 +157,7 @@ Plus every Classic rank of the other spells (see `Spells.lua`). `/mage spells` p
 ## Project layout
 
 ```
-MageForever.toc     load order, interface 16001
+ArchmageHUD.toc     load order, interface 16001
 Core.lua            namespace, events, settings, spec switch, modules, slash commands, secret-value helpers
 Spells.lua          spell table, what each spec watches, spellbook lookup, spec detection
 UI/                 Theme (look, rounded textures), Movers (edit mode), Layout (automatic spec layout), Alerts,

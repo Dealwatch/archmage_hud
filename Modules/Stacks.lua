@@ -1,5 +1,5 @@
 --[[
-    MageForever - stack bar
+    ArchmageHUD - stack bar
     One segmented bar for the stacking thing your spec watches (see
     Spells.SPEC_DATA[spec].stacks), e.g. Arcane Blast stacks on you or the
     Fire Vulnerability / Winter's Chill stacks on your target. Gold at full
@@ -92,7 +92,7 @@ local function buildHost(spec, s)
 end
 
 function St:Init()
-    frame = CreateFrame("Frame", "MageForeverStacks", UIParent)
+    frame = CreateFrame("Frame", "ArchmageHUDStacks", UIParent)
     frame:Hide()
     UI:NativeHost(frame)
     self.frame = frame

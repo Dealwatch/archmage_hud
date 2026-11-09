@@ -1,5 +1,5 @@
 --[[
-    MageForever - native aura slots
+    ArchmageHUD - native aura slots
     Forever ships Blizzard_AuraContainer: an aura frame addons may create and
     style themselves, while the client fills it from its protected side. It
     shows stacks, durations and icons of auras even while they are secret to
