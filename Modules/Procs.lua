@@ -105,7 +105,7 @@ function Procs:Init()
         f:Hide()
         preview[i] = f
     end
-    NS.Movers:Register(frame, "procs", "Procs", { "CENTER", "CENTER", 0, -84 })
+    NS.Movers:Register(frame, "procs", "Procs", { "CENTER", "CENTER", 0, -80 })
     buildCard()
 
     for _, sp in ipairs(NS.SPECS) do buildHost(sp.key, size) end

@@ -47,14 +47,15 @@ local DEFS = {
     blastWave       = { en = "Blast Wave",        ids = { 11113, 13018, 13019, 13020, 13021 }, tree = "fire", tier = 3 },
     combustion      = { en = "Combustion",        ids = { 11129 }, aura = { 11129, 28682 }, tree = "fire", tier = 4 },
     wakeOfFire      = { en = "Wake of Fire",      ids = { 1312934 } },               -- after a kill: next Fire Blast +50% crit
-    ignite          = { en = "Ignite",            ids = { 412538, 12654 }, dur = 4, color = { 1, 0.30, 0.10 } },
+    ignite          = { en = "Ignite",            ids = { 412538 }, dur = 4, color = { 1, 0.30, 0.10 } },
     fireVuln        = { en = "Fire Vulnerability", ids = { 22959 }, dur = 30, color = { 1, 0.70, 0.25 } },   -- Improved Scorch, personal on Forever
 
     -- Frost
     frostbolt       = { en = "Frostbolt",         ids = { 116, 205, 837, 7322, 8406, 8407, 8408, 10179, 10180, 10181, 25304 } },
     iceLance        = { en = "Ice Lance",         ids = { 1312002, 400640, 1240044, 1240045, 1240046, 1240047 }, tree = "frost", tier = 1 },
     fingersOfFrost  = { en = "Fingers of Frost",  ids = { 400647 }, aura = { 400669, 400670 } },   -- 1-2 charges
-    frostNova       = { en = "Frost Nova",        ids = { 122, 865, 6131, 10230 } },
+    frostNova       = { en = "Frost Nova",        ids = { 122, 865, 6131, 10230 }, dur = 8, color = { 0.55, 0.86, 1 } },   -- target frozen: Ice Lance x4
+    frostbite       = { en = "Frostbite",         ids = { 12494 }, dur = 5, color = { 0.40, 0.70, 1 } },
     coneOfCold      = { en = "Cone of Cold",      ids = { 120, 8492, 10159, 10160, 10161 } },
     blizzard        = { en = "Blizzard",          ids = { 10, 6141, 8427, 10185, 10186, 10187 } },
     coldSnap        = { en = "Cold Snap",         ids = { 12472 }, tree = "frost", tier = 2 },
@@ -91,9 +92,11 @@ Spells.DEFS = DEFS
 -- What each spec watches (how the spec is played on Forever):
 --   Arcane  build Arcane Blast stacks (4, 18 s), spend them on Arcane Wrath (6 s cd) and on
 --           Arcane Missiles when Missile Barrage procs; Arcane Power + Presence of Mind for burst.
---   Fire    Fire Blast on cooldown and crits build Heating Up (3 stacks) -> Pyroblast; keep your
+--   Fire    Fire Blast on cooldown and crits build Heating Up (3 stacks, -25% Pyroblast cast each;
+--           Pyroblast is a 6 s cast on Forever) -> Pyroblast; keep your
 --           Fire Vulnerability at 5 stacks with Scorch; Ignite rolls; Combustion for burst.
---   Frost   Frostbolt filler; Ice Lance on frozen targets / Fingers of Frost charges; Frostbolt
+--   Frost   Frostbolt filler; Ice Lance (x4) on frozen targets (Frost Nova, Frostbite) or with
+--           Fingers of Frost charges; Frostbolt
 --           builds Winter's Chill (5 stacks) for a big Cone of Cold; keep Ice Barrier up.
 -- Lists only name spells; ones you do not know are skipped.
 --   procs     buffs on you for the proc row (only shown while up)
@@ -110,16 +113,16 @@ Spells.SPEC_DATA = {
         card = "arcaneMissiles",
     },
     fire = {
-        procs = { "combustion", "clearcasting", "wakeOfFire" },
+        procs = { "combustion", "wakeOfFire", "clearcasting", "missileBarrage" },
         stacks = { key = "heatingUp", unit = "player", filter = "HELPFUL", max = 3, full = "Pyroblast!" },
         debuffs = { "fireVuln", "ignite", "pyroblast", "frostfireBolt" },
         cooldowns = { "fireBlast", "combustion", "blastWave" },
         card = "pyroblast",
     },
     frost = {
-        procs = { "fingersOfFrost", "clearcasting", "presenceOfMind" },
+        procs = { "fingersOfFrost", "clearcasting", "missileBarrage", "presenceOfMind" },
         stacks = { key = "wintersChill", unit = "target", filter = "HARMFUL|PLAYER", max = 5, full = "Cone of Cold!" },
-        debuffs = {},
+        debuffs = { "frostNova", "frostbite" },
         cooldowns = { "iceLance", "iceBarrier", "coneOfCold", "coldSnap" },
         card = "iceLance",
     },

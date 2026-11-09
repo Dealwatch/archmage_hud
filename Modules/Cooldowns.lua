@@ -79,7 +79,7 @@ function Cd:Init()
     row:SetSize(100, NS.db.cooldowns.size)
     row:Hide()
     self.frame = row
-    NS.Movers:Register(row, "cooldowns", "Cooldowns", { "CENTER", "CENTER", 0, -222 })
+    NS.Movers:Register(row, "cooldowns", "Cooldowns", { "CENTER", "CENTER", 0, -252 })
 
     local function update() self:Update() end
     NS:On("SPELL_UPDATE_COOLDOWN", update)

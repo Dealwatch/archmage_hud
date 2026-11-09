@@ -9,7 +9,8 @@ native aura slots, probe).
   sound and hint
 - Procs: only what is up right now (Missile Barrage, Clearcasting, Fingers of Frost, Combustion, Wake of Fire,
   Presence of Mind, Arcane Power), plus a big proc card while the client lights up a spell
-- Target debuffs (Fire): Fire Vulnerability, Ignite, Pyroblast, Frostfire Bolt with the real time left
+- Target debuffs with the real time left: Fire Vulnerability, Ignite, Pyroblast, Frostfire Bolt (Fire);
+  Frost Nova, Frostbite (Frost: target frozen = Ice Lance window)
 - Cooldown row: spec cooldowns plus Frost Nova, Blink, Counterspell, Ice Block, Evocation
 - Mana bar
 - Reminders: Arcane Intellect, armor, mana gem, teleport/portal runes; absorb icon for Ice Barrier / Mana Shield

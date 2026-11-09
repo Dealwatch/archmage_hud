@@ -136,7 +136,7 @@ function Db:Init()
     frame:Hide()
     UI:NativeHost(frame)
     self.frame = frame
-    NS.Movers:Register(frame, "debuffs", "Target debuffs", { "CENTER", "CENTER", 0, -160 })
+    NS.Movers:Register(frame, "debuffs", "Target debuffs", { "TOP", "CENTER", 0, -162 })   -- grows down
 
     for _, sp in ipairs(NS.SPECS) do
         for _, key in ipairs(list(sp.key)) do
