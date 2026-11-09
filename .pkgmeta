@@ -1,0 +1,5 @@
+package-as: MageForever
+
+ignore:
+  - tests
+  - .github
