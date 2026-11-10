@@ -74,7 +74,7 @@ and closes up: rows a spec does not use, modules you switched off and spells you
      Heating Up         Pyroblast!
 [Ab] [=======|=======|=======] 16.2   Stack bar + time left; absorb icon on the left
      [==============          ]       Mana
-     [F][============   24.3]         Your debuffs on the target: Fire 5 rows, Frost 2, Arcane none
+     [F][============   24.3]         Your debuffs on the target: Fire 4 (5 with Frostfire), Frost 2, Arcane none
      [F][=====           4.4]
      ...
      [FB][CB][BW][FN][BL][CS][EV]     Cooldowns: spec first, then the shared ones
@@ -91,9 +91,9 @@ hand it back to the automatic layout. Appearance > **Auto layout** drops all mov
 | Module | What it shows | Settings |
 |---|---|---|
 | **Mana Bar** | Thin mana bar, red when low, hidden at full mana out of combat | width, height, red below %, percentage text, hide at full |
-| **Procs** | One centred row that shows only active procs and burst buffs of your spec, with a time-left swipe and stacks. A big card ("Pyroblast!", "Ice Lance!") while the client lights up one of your spells, with an optional sound | icon size (after /reload), card on/off, sound |
+| **Procs** | One centred row that shows only active procs and burst buffs of your spec, with a time-left swipe and stacks. A big card ("Pyroblast!", "Ice Lance!") while the client lights up one of your spells, with an optional sound | icon size, card on/off, sound |
 | **Stack Bar** | Segmented bar for your spec's stacks, gold at full with a glow, a sound and a hint | width, height, glow, sound, hide at zero |
-| **Target Debuffs** | Fire: Fire Vulnerability, Fireball, Ignite, Pyroblast, Frostfire Bolt. Frost: Frost Nova, Frostbite. One bar per debuff of yours on the target, with the real time left and stacks | width, height |
+| **Target Debuffs** | Fire: Fire Vulnerability, Fireball, Ignite, Pyroblast, Frostfire Bolt (only in the Frostfire build, i.e. with Ice Lance). Frost: Frost Nova, Frostbite. One bar per debuff of yours on the target, with the real time left and stacks | width, height |
 | **Cooldowns** | Your spec's cooldowns plus the shared ones; the GCD is ignored. An icon glows while the client lights it up and flashes once when the cooldown your cast started is over | icon size, ready flash |
 | **Reminders** | Alerts: Arcane Intellect missing, no armor spell, Ice Barrier not up (Frost), no mana gem, low on Runes of Teleportation/Portals. Absorb icon for Ice Barrier / Mana Shield with time left; for Frost it turns red and pulses while Ice Barrier is not up (in combat, where buffs are secret) | each reminder on/off, also in combat, rune threshold, absorb icon and size, snooze time |
 

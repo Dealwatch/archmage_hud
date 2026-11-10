@@ -77,8 +77,8 @@ local function buildRow(key)
             time:SetPoint("RIGHT", -4, 0)
             time:SetJustifyH("RIGHT")
             b:SetDurationText(time)
-            local count = UI:Text(iconFrame, 11, UI.palette.text, "OUTLINE")
-            count:SetPoint("BOTTOMRIGHT", 1, 0)
+            local count = UI:Text(bar, 11, UI.palette.text, "OUTLINE")   -- stacks, readable on the bar
+            count:SetPoint("LEFT", bar, "LEFT", 4, 0)
             b:SetApplicationCount(count)
             r.nativeBar = bar
         end,

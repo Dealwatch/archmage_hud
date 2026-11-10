@@ -28,8 +28,17 @@ local function row(parent, label, desc)
         f.label:SetPoint("TOPLEFT", ROW_PAD, -9)
         f.desc = UI:Text(f, 11, P.textDim)
         f.desc:SetPoint("TOPLEFT", f.label, "BOTTOMLEFT", 0, -4)
-        f.desc:SetPoint("RIGHT", f, "RIGHT", -260, 0)
         f.desc:SetWordWrap(true)
+        -- width instead of a RIGHT anchor: a RIGHT point also pins the vertical centre
+        f.descRight = 260   -- room for the control on the right
+        local setWidth = f.SetWidth
+        function f:SetWidth(w)
+            setWidth(self, w)
+            self.desc:SetWidth(math.max(w - ROW_PAD - self.descRight, 60))
+            -- a description that wraps makes the row taller (cards read the height after SetWidth)
+            local th = self.desc.GetStringHeight and self.desc:GetStringHeight()
+            if type(th) == "number" and th > 0 then self:SetHeight(math.max(52, math.ceil(9 + 16 + 4 + th + 9))) end
+        end
         f.desc:SetText(desc)
     else
         f.label:SetPoint("LEFT", ROW_PAD, 0)
@@ -241,6 +250,7 @@ function W.Segment(parent, label, desc, options, get, set)
     holder:SetSize(#options * 90 + 4, 28)
     holder:SetPoint("RIGHT", -ROW_PAD, 0)
     UI:Skin(holder, P.surface3, P.border, "lg")
+    f.descRight = #options * 90 + 4 + ROW_PAD + 12
     f.buttons = {}
     for i, opt in ipairs(options) do
         local b = CreateFrame("Button", nil, holder)

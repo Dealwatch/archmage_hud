@@ -125,7 +125,6 @@ end
 -- the automatic layout depends on spec, known spells and enabled modules
 NS:On("MF_APPLIED", function()
     if not Movers.dragging then Movers:RestoreAll() end
-    if NS.editing and grid then Movers:DrawGrid() end   -- grid size changed while editing
 end)
 
 ---------------------------------------------------------------------------
@@ -209,7 +208,7 @@ local function buildHeader()
     title:SetText("Edit Mode")
     local sub = UI:Text(header, 11, UI.palette.textDim)
     sub:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -3)
-    sub:SetText("Only needed if you want it different: saved per spec - right-click = auto layout")
+    sub:SetText("Saved per spec. Right-click a frame: back to the auto layout.")
 
     local done = headerButton(header, "Done", true, function() Movers:Toggle(false) end)
     done:SetPoint("RIGHT", -12, 0)
@@ -225,8 +224,8 @@ local function buildHeader()
         Movers:DrawGrid()
     end)
     gridBtn:SetPoint("RIGHT", reset, "LEFT", -8, 0)
-    title:SetPoint("RIGHT", gridBtn, "LEFT", -12, 0)
-    sub:SetPoint("RIGHT", gridBtn, "LEFT", -12, 0)
+    -- text column from the left edge to the buttons (3 x 96 + 2 x 8 + 12 on the right)
+    sub:SetWidth(640 - 16 - (3 * 96 + 2 * 8 + 12) - 12)
     sub:SetWordWrap(true)
 
     -- arrow-key nudging of the selected frame
@@ -282,3 +281,6 @@ NS:On("PLAYER_REGEN_DISABLED", function()
         NS.Print("left edit mode (combat).")
     end
 end)
+
+-- grid size changed in the settings while edit mode is open (after `local grid`, so it sees it)
+NS:On("MF_APPLIED", function() if NS.editing and grid then Movers:DrawGrid() end end)

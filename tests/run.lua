@@ -356,7 +356,16 @@ run("automatic layout per spec", function()
     for _, spec in ipairs({ "fire", "frost", "arcane" }) do
         NS:SetSpec(spec)
         cd[spec] = L.Column().cooldowns[4]
-        if spec == "fire" then assert(L.DebuffRows() == 5, "fire: 5 debuff rows (Ignite/Fire Vulnerability are talent effects) " .. L.DebuffRows()) end
+        if spec == "fire" then
+            assert(L.DebuffRows() == 4, "fire: 4 debuff rows (Ignite/Fire Vulnerability are talent effects) " .. L.DebuffRows())
+            SPELLS[1312002] = "Ice Lance"
+            BOOK[#BOOK + 1] = 1312002          -- Frostfire build: Ice Lance talent
+            NS.Spells:Resolve()
+            assert(L.DebuffRows() == 5, "frostfire build adds the Frostfire Bolt row")
+            BOOK[#BOOK] = nil
+            NS.Spells:Resolve()
+            cd.fire = L.Column().cooldowns[4]
+        end
         if spec == "frost" then
             assert(L.DebuffRows() == 2, "frost: Frost Nova + Frostbite (talent known)")
             BOOK[#BOOK] = nil   -- unlearn Frostbite
@@ -407,6 +416,20 @@ run("every slider saves its setting", function()
         end
     end
     assert(n >= 16, "all sliders found: " .. n)
+    -- every switch and every segment button changes a setting too
+    local m = 0
+    for _, f in ipairs(allFrames) do
+        local click = f._scripts.OnClick
+        if click and (f.knob or (f.value ~= nil and f.bg and f.text)) then
+            local before = table.concat(dump(NS.db, {}), ",")
+            click(f)
+            local after = table.concat(dump(NS.db, {}), ",")
+            if f.knob then assert(after ~= before, "switch did not save (#" .. m + 1 .. ")") end
+            click(f)   -- switches back; segments stay on their choice
+            m = m + 1
+        end
+    end
+    assert(m >= 25, "all switches found: " .. m)
     SlashCmdList.ARCHMAGEHUD("reset confirm")
     NS.Options:Toggle()
 end)

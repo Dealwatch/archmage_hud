@@ -81,7 +81,7 @@ local function buildHost(spec, s)
             b:SetApplicationBar(bar, { minApplications = 0, maxApplications = s.max })
             -- time left of the stack aura (Arcane Blast's 18 s window), right of the bar
             local time = UI:Text(b, 10, UI.palette.text, "OUTLINE")
-            time:SetPoint("LEFT", b, "RIGHT", 4, 0)
+            time:SetPoint("LEFT", b, "RIGHT", 8, 0)   -- clear of the full-stacks glow
             b:SetDurationText(time)
             h.bar = bar
         end,

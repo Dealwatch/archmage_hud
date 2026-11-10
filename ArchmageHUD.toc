@@ -1,6 +1,6 @@
 ## Interface: 16001
 ## Title: |cff69ccf0Archmage|r |cffe8eaedHUD|r
-## Notes: Arcane, Fire & Frost HUD for WoW Forever: procs, stacks, target debuffs, cooldowns, mana and reminders for Arcane, Fire and Frost.
+## Notes: Arcane, Fire & Frost HUD for WoW Forever: procs, stacks, target debuffs, cooldowns, mana and reminders.
 ## Author: Dealwatch
 ## Version: 0.1.0
 ## SavedVariables: ArchmageHUDDB

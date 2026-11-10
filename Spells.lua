@@ -14,7 +14,8 @@ local Spells = {}
 NS.Spells = Spells
 
 -- key = { en = English name, ids = candidate IDs, [aura = aura IDs if they differ],
---         [dur = default debuff seconds], [from = cast that applies it], [color = bar colour], [talent = ID of the talent that
+--         [dur = default debuff seconds], [from = cast that applies it], [color = bar colour],
+--         [needs = spell key that marks the build using this debuff row], [talent = ID of the talent that
 --         causes this debuff: talent effects are never castable, so the row shows once you have the talent],
 --         [group = "teleport" | "portal"], [tree = spec, tier = talent depth for spec detection] }
 -- Forever-only IDs (400xxx, 12xxxxx, 13xxxxx) were checked against Wowhead's
@@ -39,7 +40,8 @@ local DEFS = {
     -- Fire
     fireball        = { en = "Fireball",          ids = { 133, 143, 145, 3140, 8400, 8401, 8402, 10148, 10149, 10150, 10151, 25306 },
                         dur = 8, color = { 1, 0.62, 0.20 } },                     -- DoT counts for Fire Power
-    frostfireBolt   = { en = "Frostfire Bolt",    ids = { 401502, 1237312, 1237313 }, dur = 9, color = { 0.75, 0.45, 1 } },   -- has a DoT
+    frostfireBolt   = { en = "Frostfire Bolt",    ids = { 401502, 1237312, 1237313 }, dur = 9, color = { 0.75, 0.45, 1 },
+                        needs = "iceLance" },   -- has a DoT; trained by every mage at 40, a row only for the Frostfire build
     fireBlast       = { en = "Fire Blast",        ids = { 2136, 2137, 2138, 8412, 8413, 10197, 10199 } },   -- shares its 8 s cooldown with Ice Lance
     scorch          = { en = "Scorch",            ids = { 2948, 8444, 8445, 8446, 10205, 10206, 10207 } },
     flamestrike     = { en = "Flamestrike",       ids = { 2120, 2121, 8422, 8423, 10215, 10216 } },
@@ -275,7 +277,9 @@ end
 function Spells:DebuffShown(key)
     local d = DEFS[key]
     if not d then return false end
-    if d.known or NS.editing then return true end
+    if NS.editing then return true end
+    if d.needs and not (DEFS[d.needs] and DEFS[d.needs].known) then return false end
+    if d.known then return true end
     if d.talent and isKnown(d.talent) then return true end
     -- the client may not report passive talents as known: a debuff of yours we have seen counts too
     return NS.db and NS.db.learned.seen[key] or false

@@ -9,12 +9,13 @@ native aura slots, probe).
   sound and hint
 - Procs: only what is up right now (Missile Barrage, Clearcasting, Fingers of Frost, Combustion, Wake of Fire,
   Presence of Mind, Arcane Power), plus a big proc card while the client lights up a spell
-- Target debuffs with the real time left: Fire Vulnerability, Fireball, Ignite, Pyroblast, Frostfire Bolt (Fire);
+- Target debuffs with the real time left: Fire Vulnerability, Fireball, Ignite, Pyroblast, Frostfire Bolt (Fire, the last
+  only in the Frostfire build);
   Frost Nova, Frostbite (Frost: target frozen = Ice Lance window)
 - Cooldown row: spec cooldowns plus Frost Nova, Blink, Counterspell, Ice Block, Evocation
 - Arcane follows the Forever hybrid play: Heating Up in the proc row, Fire Blast in the cooldown row,
   time left of the Arcane Blast window next to the stack bar
-- Automatic layout per spec: the HUD column closes up around what the spec uses (Fire 5 debuff rows,
+- Automatic layout per spec: the HUD column closes up around what the spec uses (Fire 4 debuff rows, 5 with Frostfire,
   Frost 2, Arcane none; switched-off modules and unknown spells take no space). Moved frames are saved
   per spec; right-click in edit mode returns a frame to the automatic layout
 - Ignite, Fire Vulnerability and Frostbite rows appear once you have the talent (Ignite, Improved Scorch, Frostbite);
@@ -27,6 +28,10 @@ native aura slots, probe).
 - Cooldown icons flash once when the cooldown your cast started is over (Fire Blast and Ice Lance flash together)
 - Frost: the absorb icon turns red and pulses while Ice Barrier is not up (buffs are secret in combat)
 - WowUp: releases are built when a GitHub release is published (zip + release.json); MIT license
+- Release check against renders of the real frame tree: text anchored with TOPLEFT plus RIGHT (which also pins
+  the vertical centre) now uses widths instead (alerts, edit-mode header, overview, module cards, setting rows);
+  setting rows grow with a wrapped description; debuff stacks sit on the bar; the stack timer clears the glow;
+  edit-mode grid redraw fixed; Frostfire Bolt row only in the Frostfire build; tests for every switch
 - Robust for the first test: frames are never really hidden while combat starts (a pull at 0 stacks
   kept the stack bar hidden), no endless retry when auras are secret out of combat (battlegrounds,
   encounters), unreadable buffs out of combat never warn, aura frames are only moved/resized out of

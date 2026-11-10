@@ -96,13 +96,17 @@ local function heroBlock(parent)
     h.ver:SetPoint("BOTTOMLEFT", h.title, "BOTTOMRIGHT", 10, 3)
     h.line1 = UI:Text(h, 13)
     h.line1:SetPoint("TOPLEFT", h.title, "BOTTOMLEFT", 0, -8)
-    h.line1:SetPoint("RIGHT", h.edit, "LEFT", -16, 0)
     h.line2 = UI:Text(h, 12, P.textDim)
     h.line2:SetPoint("TOPLEFT", h.line1, "BOTTOMLEFT", 0, -6)
-    h.line2:SetPoint("RIGHT", h.edit, "LEFT", -16, 0)
     h.line2:SetWordWrap(true)
     h.line2:SetText("/mage opens this window, /mage edit moves frames, /mage probe tests the client")
-    function h:Layout(width) self:SetSize(width, 116) return 116 end
+    function h:Layout(width)
+        self:SetSize(width, 116)
+        -- text column between logo and buttons (widths, not RIGHT anchors: those pin the vertical centre)
+        local textW = width - (20 + 72 + 18) - (140 + 20 + 16)
+        self.line1:SetWidth(textW); self.line2:SetWidth(textW)
+        return 116
+    end
     function h:Refresh()
         local r, g, b = UI:Accent()
         self.title:SetText(string.format("|cff%02x%02x%02xArchmage|r HUD", r * 255, g * 255, b * 255))
@@ -150,7 +154,6 @@ local function tilesBlock(parent)
         f.label:SetText(d.label)
         f.value = UI:Text(f, 15)
         f.value:SetPoint("BOTTOMLEFT", f.iconFrame, "BOTTOMRIGHT", 12, 2)
-        f.value:SetPoint("RIGHT", -8, 0)
         f.def = d
         t.tiles[i] = f
     end
@@ -158,6 +161,7 @@ local function tilesBlock(parent)
         local w = (width - 2 * 14) / 3
         for i, f in ipairs(self.tiles) do
             f:SetSize(w, 70)
+            f.value:SetWidth(w - (14 + 40 + 12) - 8)   -- width, not a RIGHT anchor
             f:ClearAllPoints()
             f:SetPoint("TOPLEFT", (i - 1) * (w + 14), 0)
         end
@@ -201,7 +205,6 @@ local function modulesBlock(parent)
         c.title:SetText(mod.title)
         c.desc = UI:Text(c, 11, P.textDim)
         c.desc:SetPoint("TOPLEFT", c.title, "BOTTOMLEFT", 0, -3)
-        c.desc:SetPoint("RIGHT", -70, 0)
         c.desc:SetWordWrap(true)
         if c.desc.SetMaxLines then c.desc:SetMaxLines(2) end
         c.desc:SetText(mod.desc)
@@ -215,6 +218,7 @@ local function modulesBlock(parent)
         for i, c in ipairs(self.cards) do
             local col, rowI = (i - 1) % 2, math.floor((i - 1) / 2)
             c:SetSize(w, 64)
+            c.desc:SetWidth(w - (14 + 36 + 12) - 70)   -- up to the switch
             c:ClearAllPoints()
             c:SetPoint("TOPLEFT", col * (w + 14), -26 - rowI * 76)
         end
@@ -257,14 +261,14 @@ local function buildPages()
         c:Add(W.Slider(c, "Icon size", nil, 20, 48, 1, px, bind("procs", "size")))
         c:Add(W.Toggle(c, "Proc card", "\"Pyroblast!\" while the client lights up a spell (Hot Streak, Brain Freeze, ...).", bind("procs", "card")))
         c:Add(W.Toggle(c, "Sound with the card", nil, bind("procs", "sound")))
-        local info = c:Add(W.ButtonRow(c, "Tracked", "", "Reload UI", function() ReloadUI() end))
+        local info = c:Add(W.ButtonRow(c, "Tracked", "", "Test alerts", function() NS.Alerts:Test() end))
         local base = info.Refresh
         function info:Refresh()
             base(self)
             local names = {}
             for _, key in ipairs(Spells.SPEC_DATA[NS.spec].procs) do
                 local d = Spells:Get(key)
-                names[#names + 1] = (d.name or d.en) .. (d.known and "" or " |cff6b7582(not learned)|r")
+                names[#names + 1] = d.name or d.en   -- talent procs are never "known" spells: no learned marker
             end
             self.desc:SetText(table.concat(names, ", "))
         end
@@ -300,9 +304,9 @@ local function buildPages()
             local names = {}
             for _, key in ipairs(Spells:DebuffsFor(NS.spec)) do
                 local d = Spells:Get(key)
-                names[#names + 1] = d.name or d.en
+                if Spells:DebuffShown(key) then names[#names + 1] = d.name or d.en end
             end
-            self.desc:SetText(#names > 0 and table.concat(names, ", ") or "Nothing for this spec.")
+            self.desc:SetText(#names > 0 and table.concat(names, ", ") or "Nothing for this spec (yet).")
         end
     end
 
