@@ -60,7 +60,7 @@ end
 function R:Update()
     local db = NS.db.reminders
     local on = NS:IsEnabled("reminders")
-    local inCombat = InCombatLockdown()
+    local inCombat = NS.InCombat()
     local A = NS.Alerts
     local quiet = UnitIsDeadOrGhost("player") or IsMounted() or (inCombat and not db.inCombat)
 
@@ -106,6 +106,15 @@ function R:BuildAbsorb()
     UI:NativeHost(f)
     f.icon:SetDesaturated(true)
     f.icon:SetAlpha(0.35)
+    -- The client covers this icon with the live Ice Barrier / Mana Shield and its visibility
+    -- is secret to us, so whatever shows through is the in-combat "no barrier" alert.
+    local ag = f.icon:CreateAnimationGroup()
+    ag:SetLooping("BOUNCE")
+    local a = ag:CreateAnimation("Alpha")
+    a:SetFromAlpha(0.9)
+    a:SetToAlpha(0.3)
+    a:SetDuration(0.6)
+    f.pulse = ag
     self.absorbFrame = f
     NS.Movers:Register(f, "absorb", "Absorb", NS.Layout.For("absorb"))   -- left of the stack bar
     self.absorbNative = NS.Native:Slot({
@@ -144,6 +153,10 @@ function R:DrawAbsorb()
     if self.absorbNative:Active() then
         self.absorbNative:Restyle(function(b) b:SetSize(db.absorbSize, db.absorbSize) end)
     end
+    local warn = NS.spec == "frost" and db.barrier and Spells:Known("iceBarrier") and self.absorbNative:Active()
+    local c = warn and UI.palette.danger or UI.palette.border
+    UI:SetBorderColor(f, c[1], c[2], c[3], 1)
+    if warn then f.pulse:Play() else f.pulse:Stop() end
 end
 
 function R:Init()
@@ -159,7 +172,7 @@ function R:Init()
     NS:On("PLAYER_ALIVE", update)
     NS:On("PLAYER_UNGHOST", update)
     NS:On("MF_SPELLS", function() self:Apply() end)
-    NS:On("MF_SPEC", update)
+    NS:On("MF_SPEC", function() self:Apply() end)
     NS:OnUnit("UNIT_SPELLCAST_SUCCEEDED", "player", function(_, _, _, spellID)
         local key = Spells:KeyFor(spellID)
         if not key then return end

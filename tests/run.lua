@@ -381,6 +381,50 @@ run("automatic layout per spec", function()
     NS:SetSpec("auto")
 end)
 
+run("every slider saves its setting", function()
+    SlashCmdList.ARCHMAGEHUD("")
+    for _, key in ipairs({ "overview", "mana", "procs", "stacks", "debuffs", "cooldowns", "reminders", "appearance" }) do
+        NS.Options:Show(key)
+    end
+    local function dump(t, out)
+        local keys = {}
+        for k in pairs(t) do keys[#keys + 1] = tostring(k) end
+        table.sort(keys)
+        for _, k in ipairs(keys) do
+            local v = t[k] ~= nil and t[k] or t[tonumber(k)]
+            if type(v) == "table" then if k ~= "probe" and k ~= "learned" then out[#out + 1] = k .. "{"; dump(v, out); out[#out + 1] = "}" end
+            else out[#out + 1] = k .. "=" .. tostring(v) end
+        end
+        return out
+    end
+    local n = 0
+    for _, f in ipairs(allFrames) do
+        if f._kind == "Slider" and f._scripts.OnValueChanged then
+            local before = table.concat(dump(NS.db, {}), ",")
+            f:SetValue(f._val == f._max and f._min or f._max)
+            assert(table.concat(dump(NS.db, {}), ",") ~= before, "slider did not save (#" .. n + 1 .. ")")
+            n = n + 1
+        end
+    end
+    assert(n >= 16, "all sliders found: " .. n)
+    SlashCmdList.ARCHMAGEHUD("reset confirm")
+    NS.Options:Toggle()
+end)
+
+run("ready flash and live proc size", function()
+    fire("UNIT_SPELLCAST_SUCCEEDED", "player", "guid", 2136)   -- Fire Blast (shares its cooldown with Ice Lance)
+    local fb
+    for _, f in ipairs(allFrames) do if f.key == "fireBlast" and f.cd then fb = f end end
+    assert(fb and fb.armed, "fire blast icon armed by your cast")
+    fb.cd._scripts.OnCooldownDone(fb.cd)
+    assert(fb.mfFlash and fb.mfFlash:IsShown() and not fb.armed, "flash once when ready")
+    NS.db.procs.size = 40
+    NS:ApplyAll()
+    assert(_G.ArchmageHUDProcs:GetHeight() == 40, "proc size applies without /reload")
+    NS.db.procs.size = 30
+    NS:ApplyAll()
+end)
+
 run("settings change", function()
     NS.db.appearance.accent = "arcane"
     NS.UI:ApplyAppearance()

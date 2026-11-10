@@ -35,7 +35,7 @@ local function buildHost(spec, size)
         group = { size = size, spacing = 4 },
         ids = function() return Spells:AuraIDs(unpack(Spells.SPEC_DATA[spec].procs)) end,
         init = function(b)
-            b:SetSize(size, size)
+            b:SetSize(NS.db.procs.size, NS.db.procs.size)
             UI:Skin(b, UI.palette.track, UI.palette.border)
             local tex = b:CreateTexture(nil, "ARTWORK")
             tex:SetPoint("TOPLEFT", 1, -1)
@@ -93,7 +93,6 @@ end
 
 function Procs:Init()
     local size = NS.db.procs.size
-    self.size = size   -- the client lays the row out once; a new size applies after /reload
     frame = CreateFrame("Frame", "ArchmageHUDProcs", UIParent)
     frame:SetSize(4 * size + 12, size)
     frame:Hide()
@@ -136,6 +135,27 @@ function Procs:Apply()
     UI:SafeShow(frame, on)
     for spec, h in pairs(hosts) do UI:SafeShow(h.frame, on and spec == NS.spec and not NS.editing) end
     for _, f in ipairs(preview) do f:SetShown(on and NS.editing or false) end
+    -- icon size, live: our frames, then the rows the client lays out
+    local size = NS.db.procs.size
+    NS.AfterCombat("procslayout", function()
+        frame:SetSize(4 * size + 12, size)
+        for i, f in ipairs(preview) do
+            f:SetSize(size, size)
+            f:SetPoint("CENTER", frame, "CENTER", (i - 2) * (size + 4), 0)
+        end
+    end)
+    for spec, h in pairs(hosts) do
+        if h.native:Active() then
+            h.native:Restyle(function(c)
+                local key = "procs_" .. spec
+                c:SetAuraGroupLayout(key, { elementSpacing = 4, elementWidth = size, elementHeight = size })
+                for i = 1, c:GetAuraGroupFrameCount(key) or 0 do
+                    local b = c:GetAuraGroupFrame(key, i)
+                    if b then b:SetSize(size, size) end
+                end
+            end)
+        end
+    end
     self:DrawCard()
 end
 

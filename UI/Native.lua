@@ -29,8 +29,14 @@ end
 -- Run fn once auras are readable: after combat, or (out of combat but secret,
 -- e.g. in a battleground or encounter) a little later. AfterCombat alone would run
 -- fn at once out of combat and recurse.
+local pending = {}
 local function later(key, fn)
-    if InCombatLockdown() then NS.AfterCombat(key, fn) else C_Timer.After(2, fn) end
+    if InCombatLockdown() then
+        NS.AfterCombat(key, fn)
+    elseif not pending[key] then   -- one retry per slot, however often it is asked
+        pending[key] = true
+        C_Timer.After(2, function() pending[key] = nil; fn() end)
+    end
 end
 
 local function idMap(list)

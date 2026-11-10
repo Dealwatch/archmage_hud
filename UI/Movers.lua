@@ -123,7 +123,10 @@ function Movers:RestoreAll()
 end
 
 -- the automatic layout depends on spec, known spells and enabled modules
-NS:On("MF_APPLIED", function() if not Movers.dragging then Movers:RestoreAll() end end)
+NS:On("MF_APPLIED", function()
+    if not Movers.dragging then Movers:RestoreAll() end
+    if NS.editing and grid then Movers:DrawGrid() end   -- grid size changed while editing
+end)
 
 ---------------------------------------------------------------------------
 -- Grid and header
@@ -195,7 +198,7 @@ end
 
 local function buildHeader()
     header = CreateFrame("Frame", nil, UIParent)
-    header:SetSize(560, 52)
+    header:SetSize(640, 56)
     header:SetPoint("TOP", 0, -40)
     header:SetFrameStrata("DIALOG")
     UI:Skin(header, UI.palette.surface, UI.palette.border, "lg")
@@ -222,6 +225,9 @@ local function buildHeader()
         Movers:DrawGrid()
     end)
     gridBtn:SetPoint("RIGHT", reset, "LEFT", -8, 0)
+    title:SetPoint("RIGHT", gridBtn, "LEFT", -12, 0)
+    sub:SetPoint("RIGHT", gridBtn, "LEFT", -12, 0)
+    sub:SetWordWrap(true)
 
     -- arrow-key nudging of the selected frame
     header:EnableKeyboard(true)

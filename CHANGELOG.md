@@ -20,6 +20,13 @@ native aura slots, probe).
 - Ignite, Fire Vulnerability and Frostbite rows appear once you have the talent (Ignite, Improved Scorch, Frostbite);
   spec detection is deterministic for hybrid and low-level talent sets
 - Mana bar
+- Fixes taken over from Farseer's in-game test: settings sliders save (they never did: `bind()` in the middle of
+  an argument list yields one value), test that every slider saves; proc icon size applies without /reload;
+  edit-mode grid redraws; settings text no longer runs under buttons; mana bar turns red in combat through a
+  colour curve; native slots retry once per slot; `/mage probe` reports mana
+- Cooldown icons flash once when the cooldown your cast started is over (Fire Blast and Ice Lance flash together)
+- Frost: the absorb icon turns red and pulses while Ice Barrier is not up (buffs are secret in combat)
+- WowUp: releases are built when a GitHub release is published (zip + release.json); MIT license
 - Robust for the first test: frames are never really hidden while combat starts (a pull at 0 stacks
   kept the stack bar hidden), no endless retry when auras are secret out of combat (battlegrounds,
   encounters), unreadable buffs out of combat never warn, aura frames are only moved/resized out of

@@ -13,6 +13,11 @@ Same look and handling as *Shammy Forever* (settings window, edit mode, alerts).
 
 ## Install
 
+**WowUp:** *My Addons* > *Install from URL* > paste the GitHub address of this repository. Updates then show up
+in WowUp by themselves (every published release).
+
+**Manual:**
+
 1. Download `ArchmageHUD-<version>.zip` (from a release, or the zip you were sent).
 2. Unzip it into `World of Warcraft\_forever_\Interface\AddOns\` so that you get
    `...\AddOns\ArchmageHUD\ArchmageHUD.toc` (not `ArchmageHUD\ArchmageHUD\...`).
@@ -89,8 +94,8 @@ hand it back to the automatic layout. Appearance > **Auto layout** drops all mov
 | **Procs** | One centred row that shows only active procs and burst buffs of your spec, with a time-left swipe and stacks. A big card ("Pyroblast!", "Ice Lance!") while the client lights up one of your spells, with an optional sound | icon size (after /reload), card on/off, sound |
 | **Stack Bar** | Segmented bar for your spec's stacks, gold at full with a glow, a sound and a hint | width, height, glow, sound, hide at zero |
 | **Target Debuffs** | Fire: Fire Vulnerability, Fireball, Ignite, Pyroblast, Frostfire Bolt. Frost: Frost Nova, Frostbite. One bar per debuff of yours on the target, with the real time left and stacks | width, height |
-| **Cooldowns** | Your spec's cooldowns plus the shared ones; the GCD is ignored. An icon glows while the client lights it up | icon size |
-| **Reminders** | Alerts: Arcane Intellect missing, no armor spell, Ice Barrier not up (Frost), no mana gem, low on Runes of Teleportation/Portals. Absorb icon for Ice Barrier / Mana Shield with time left | each reminder on/off, also in combat, rune threshold, absorb icon and size, snooze time |
+| **Cooldowns** | Your spec's cooldowns plus the shared ones; the GCD is ignored. An icon glows while the client lights it up and flashes once when the cooldown your cast started is over | icon size, ready flash |
+| **Reminders** | Alerts: Arcane Intellect missing, no armor spell, Ice Barrier not up (Frost), no mana gem, low on Runes of Teleportation/Portals. Absorb icon for Ice Barrier / Mana Shield with time left; for Frost it turns red and pulses while Ice Barrier is not up (in combat, where buffs are secret) | each reminder on/off, also in combat, rune threshold, absorb icon and size, snooze time |
 
 **Appearance:** accent colour (Mage, *Follow spec*, Arcane, Fire, Frost), font, text size, bar texture, sounds,
 out-of-combat opacity (0% = hidden), show the HUD when an enemy is targeted, HUD scale, edit mode grid,
@@ -151,7 +156,8 @@ Plus every Classic rank of the other spells (see `Spells.lua`). `/mage spells` p
 
 - Whether the native aura container works in the real client (`/mage probe` shows `native` per slot).
 - Whether the client lights up spells for Heating Up / Missile Barrage / Fingers of Frost (proc card).
-- The mana bar's red tint and "hide at full" need readable mana; with secret mana the bar just stays blue and visible.
+- Mana: when the value is secret the client colours the bar through a colour curve (works in Farseer); "hide at
+  full" needs readable mana, so with secret mana the bar stays visible.
 - The debuff lists (Fire Vulnerability is personal on Forever and filtered as yours; Frostbite/Frost Nova count as yours).
 - Whether the client reports passive talents as known (`/mage probe` line "talents known"): the Ignite, Fire Vulnerability
   and Frostbite rows appear only with the talent.
@@ -177,5 +183,21 @@ tests/run.lua       offline test client
 aura container. It drives login, every settings page, the spec switch, edit mode, the reminders, the stack bar,
 the mana bar, a combat sequence with the proc card, and the fade. Any Lua error fails the run.
 
-Releases: write the notes in `CHANGELOG.md` and push a tag `vX.Y.Z`. The GitHub Action runs the test and builds
-the release zip (`.pkgmeta` leaves out `tests` and `.github`).
+## Blizzard's own displays
+
+Forever has a Cooldown Manager (Options > Gameplay Enhancements). It is off unless you turned it on, and it is not
+needed alongside this HUD.
+
+## Releases
+
+When Blizzard patches Forever, bump `## Interface` in the TOC to the new number and release, so the addon never
+shows as out of date.
+
+Write the notes in `CHANGELOG.md` and bump `## Version` in the TOC, then on GitHub go to *Releases* >
+*Draft a new release*, create the tag `vX.Y.Z` on `main` and publish. The GitHub Action runs the offline test and
+attaches the addon zip and `release.json` (flavor `forever`, used by WowUp) to that release
+(`.pkgmeta` leaves out `tests` and `.github`).
+
+## License
+
+MIT, see [LICENSE](LICENSE).

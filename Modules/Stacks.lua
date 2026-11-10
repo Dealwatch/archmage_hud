@@ -170,7 +170,7 @@ function St:Draw()
     local s = def()
     local stacks = state.stacks
     if NS.editing and not stacks then stacks = 3 end
-    local show = s and NS:IsEnabled("stacks") and (NS.editing or not db.hideEmpty or InCombatLockdown()
+    local show = s and NS:IsEnabled("stacks") and (NS.editing or not db.hideEmpty or NS.InCombat()
         or (stacks or 0) > 0) or false
     UI:SafeShow(frame, show)
     for spec, h in pairs(hosts) do UI:SafeShow(h.frame, show and spec == NS.spec and not NS.editing) end

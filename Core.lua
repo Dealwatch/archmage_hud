@@ -45,8 +45,9 @@ function NS.Try(fn, ...)
     return unpack(res, 2)
 end
 
+-- For visibility: NS.combat is set first thing at PLAYER_REGEN_DISABLED, before the lockdown starts.
 function NS.InCombat()
-    return InCombatLockdown() or UnitAffectingCombat("player") and true or false
+    return NS.combat or InCombatLockdown()
 end
 
 ---------------------------------------------------------------------------
@@ -179,6 +180,7 @@ NS.defaults = {
     },
     cooldowns = {
         size = 30,
+        readyFlash = true,      -- an icon flashes once when the cooldown your cast started is over
     },
     reminders = {
         intellect = true,       -- Arcane Intellect / Brilliance missing

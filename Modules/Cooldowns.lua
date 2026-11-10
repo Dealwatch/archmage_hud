@@ -19,6 +19,7 @@ local Cd = NS:NewModule("cooldowns", {
 local row
 local icons = {}        -- key -> icon (created on first use)
 local lit = {}          -- spellID -> true while the client glows it
+local SHARED = { fireBlast = "iceLance", iceLance = "fireBlast" }   -- one 8 s cooldown on Forever
 
 local function icon(key)
     local f = icons[key]
@@ -26,6 +27,11 @@ local function icon(key)
         f = UI:Icon(row, NS.db.cooldowns.size)
         f.cd = UI:Cooldown(f)
         f.key = key
+        -- flash once when the cooldown that your own cast started runs out
+        f.cd:SetScript("OnCooldownDone", function()
+            if f.armed and NS.db.cooldowns.readyFlash and f:IsShown() then UI:Flash(f) end
+            f.armed = false
+        end)
         icons[key] = f
     end
     return f
@@ -86,6 +92,12 @@ function Cd:Init()
     NS:On("SPELL_UPDATE_USABLE", update)
     NS:On("MF_SPELLS", update)
     NS:On("MF_SPEC", update)
+    NS:OnUnit("UNIT_SPELLCAST_SUCCEEDED", "player", function(_, _, _, spellID)
+        local key = Spells:KeyFor(spellID)
+        for _, k in ipairs({ key, key and SHARED[key] }) do
+            if icons[k] then icons[k].armed = true end
+        end
+    end)
     NS:On("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", function(_, spellID)
         if spellID and not NS.IsSecret(spellID) then lit[spellID] = true; update() end
     end)
