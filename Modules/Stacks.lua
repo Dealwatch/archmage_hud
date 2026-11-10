@@ -30,10 +30,12 @@ St.state = state
 local frame
 local pips = {}
 local hosts = {}      -- spec -> { frame, native, bar }
-local marks = {}      -- rotation marks under the segments: static icons, what to cast at which stack
-local seconds = {}    -- spec -> { frame, native, lines }: the second, thin stack bar
+local marks = {}      -- rotation marks under the segments: the spell to cast at that many stacks
+local seconds = {}    -- spec -> { frame, native, lines }: the pips of a second stack aura, in the row of the marks
+local MARK = Layout.MARKS - 5
 local SECOND_H = Layout.SECOND - 5
 local SECOND_COLOR = { 1, 0.49, 0.18 }   -- Heating Up: fire
+local DIM = 0.55
 
 local function def(spec)
     local d = Spells.SPEC_DATA[spec or NS.spec]
@@ -84,7 +86,7 @@ local function buildHost(spec, s)
             bar:SetStatusBarColor(UI:Accent())
             b:SetApplicationBar(bar, { minApplications = 0, maxApplications = s.max })
             -- time left of the stack aura (Arcane Blast's 18 s window), right of the bar
-            local time = UI:Text(b, 10, UI.palette.text, "OUTLINE")
+            local time = UI:Text(b, 12, UI.palette.text, "OUTLINE")
             time:SetPoint("LEFT", b, "RIGHT", 8, 0)   -- clear of the full-stacks glow
             b:SetDurationText(time)
             h.bar = bar
@@ -95,8 +97,46 @@ local function buildHost(spec, s)
     h.native:Build()
 end
 
--- A second, thin bar under the first (Arcane hybrid: Heating Up next to the Arcane Blast stacks).
--- Native only: without the client's aura slot there is nothing to fill it from.
+-- A rotation mark: the icon of the spell to cast at n stacks, under the segment that completes them.
+-- Small and grey until then. At n stacks the client itself lights it up: a native slot on the same
+-- aura whose application bar runs from n - 1 to n. The bar is the gold frame ("cast this", like the
+-- proc card and a lit cooldown) and the bright icon rides on its fill. So it works while the stacks
+-- are secret in combat, where our own gold bar and hint cannot.
+local function buildMark(spec, s, n, keys, second)
+    local m = CreateFrame("Frame", nil, frame)
+    m:SetSize(MARK, MARK)
+    m:Hide()
+    UI:NativeHost(m)
+    m.icon = m:CreateTexture(nil, "ARTWORK")
+    m.icon:SetPoint("TOPLEFT", 3, -3)
+    m.icon:SetPoint("BOTTOMRIGHT", -3, 3)
+    m.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    m.spec, m.n, m.keys, m.second = spec, n, keys, second or false
+    m.native = NS.Native:Slot({
+        key = (second and "mark2_" or "mark_") .. spec .. n, parent = m, unit = s.unit, filter = s.filter, level = 3,
+        ids = function() return Spells:AuraIDs(s.key) end,
+        init = function(b)
+            b:SetSize(MARK, MARK)
+            local bar = CreateFrame("StatusBar", nil, b)
+            bar:SetAllPoints()
+            bar:SetStatusBarTexture(UI.WHITE)
+            bar:SetStatusBarColor(GOLD[1], GOLD[2], GOLD[3])
+            b:SetApplicationBar(bar, { minApplications = n - 1, maxApplications = n })
+            -- anchored to the fill with an inset: no fill, no icon (its anchors cross, so it is not drawn)
+            local fill = bar:GetStatusBarTexture()
+            m.lit = bar:CreateTexture(nil, "OVERLAY")
+            m.lit:SetPoint("TOPLEFT", fill, "TOPLEFT", 2, -2)
+            m.lit:SetPoint("BOTTOMRIGHT", fill, "BOTTOMRIGHT", -2, 2)
+            m.lit:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+        end,
+        onBuilt = function() St:Apply() end,
+    })
+    marks[#marks + 1] = m
+    m.native:Build()
+end
+
+-- The pips of a second stack aura (Arcane hybrid: Heating Up next to the Arcane Blast stacks).
+-- Native only: without the client's aura slot there is nothing to fill them from.
 local function buildSecond(spec, s)
     local host = CreateFrame("Frame", nil, frame)
     host:Hide()
@@ -173,18 +213,19 @@ function St:Init()
     self.hint:Hide()
     NS.Movers:Register(frame, "stacks", "Stacks", NS.Layout.For("stacks"))
 
-    for i = 1, 3 do
-        marks[i] = UI:Icon(frame, Layout.MARKS - 5)
-        marks[i]:SetAlpha(0.9)
-        marks[i]:Hide()
-    end
     self.marks = marks
 
     for _, sp in ipairs(NS.SPECS) do
         local s = def(sp.key)
-        if s then buildHost(sp.key, s) end
+        if s then
+            buildHost(sp.key, s)
+            for _, mark in ipairs(s.marks or {}) do buildMark(sp.key, s, mark[1], { unpack(mark, 2) }) end
+        end
         local s2 = Spells.SPEC_DATA[sp.key].second
-        if s2 then buildSecond(sp.key, s2) end
+        if s2 then
+            buildSecond(sp.key, s2)
+            buildMark(sp.key, s2, s2.max, { s2.mark }, true)
+        end
     end
 
     local function update() self:Update() end
@@ -224,6 +265,7 @@ function St:Draw()
     UI:SafeShow(frame, show)
     for spec, h in pairs(hosts) do UI:SafeShow(h.frame, show and spec == NS.spec and not NS.editing) end
     for spec, h in pairs(seconds) do UI:SafeShow(h.frame, show and spec == NS.spec) end
+    for _, m in ipairs(marks) do UI:SafeShow(m, show and db.marks and m.spec == NS.spec and m.def ~= nil) end
     if not show then return end
 
     local h = hosts[NS.spec]
@@ -241,10 +283,15 @@ function St:Draw()
         p.fill:SetShown(i <= filled)
         if state.full then p.fill:SetVertexColor(GOLD[1], GOLD[2], GOLD[3], 1) else p.fill:SetVertexColor(r, g, b, 1) end
     end
+    for _, m in ipairs(marks) do   -- without a native slot: lit from the stacks we can read
+        local lit = not m.native:Active() and not m.second and filled >= m.n
+        m.icon:SetDesaturated(not lit)
+        m.icon:SetAlpha(lit and 1 or DIM)
+    end
     local d = Spells:Get(s.key)
     self.label:SetText(d and d.name or "")
     self.hint:SetText(s.full or "")
-    local hint = state.full and s.full ~= nil
+    local hint = state.full and s.full ~= nil and self.hint:GetStringWidth() <= db.width   -- a bar too narrow for it: the lit mark says it
     self.hint:SetShown(hint)
     -- narrow bar or large text: the hint wins, the name would run into it
     self.label:SetShown(not hint or self.label:GetStringWidth() + self.hint:GetStringWidth() + 8 <= db.width)
@@ -276,33 +323,37 @@ function St:Apply()
         local sd = def(spec)
         hs.native:Restyle(function(b) b:SetSize(geometry(sd.max)) end)
     end
-    -- rotation marks: the first spell of each mark that you know, under its segment
-    local row = NS.db.stacks.marks and s and s.marks
-    for i, m in ipairs(marks) do
-        local mark, d = row and row[i], nil
-        for j = 2, mark and #mark or 0 do
-            local c = Spells:Get(mark[j])
-            if not d and c and (c.known or NS.editing) then d = c end
+    -- rotation marks: the first spell of each mark that you know, under the segment that completes it
+    local row = NS.db.stacks.marks
+    for _, m in ipairs(marks) do
+        m.def = nil
+        for _, key in ipairs(m.keys) do
+            local c = Spells:Get(key)
+            if not m.def and c and (c.known or NS.editing) then m.def = c end
         end
-        m:SetShown(d ~= nil)
-        if d then
-            m.icon:SetTexture(d.icon)
-            m:ClearAllPoints()
-            m:SetPoint("TOP", frame, "BOTTOMLEFT", mark[1] * (pipW + GAP) - GAP / 2, -5)
+        if m.def then
+            m.icon:SetTexture(m.def.icon)
+            if m.lit then m.lit:SetTexture(m.def.icon) end
+        end
+        if m.spec == NS.spec then
+            m:ClearAllPoints()   -- the second aura's mark follows its pips, under the first two segments
+            m:SetPoint("TOP", frame, "BOTTOMLEFT", (m.second and 1.5 or m.n - 0.5) * (pipW + GAP) - GAP / 2, -5)
         end
     end
     for spec, h2 in pairs(seconds) do
         local s2 = Spells.SPEC_DATA[spec].second
-        local segW = (w - GAP * (s2.max - 1)) / s2.max
+        -- in the row of the marks: from the left edge up to its own mark, centred on the row
+        local sw = row and math.max(1.5 * (pipW + GAP) - GAP / 2 - MARK / 2 - 4, 12) or w
+        local segW = (sw - GAP * (s2.max - 1)) / s2.max
         h2.frame:ClearAllPoints()
-        h2.frame:SetPoint("TOPLEFT", frame, "BOTTOMLEFT", 0, -((row and Layout.MARKS or 0) + 5))
-        h2.frame:SetSize(w, SECOND_H)
+        h2.frame:SetPoint("TOPLEFT", frame, "BOTTOMLEFT", 0, -5 - ((row and MARK or SECOND_H) - SECOND_H) / 2)
+        h2.frame:SetSize(sw, SECOND_H)
         for i, t in ipairs(h2.lines) do
             t:ClearAllPoints()
             t:SetPoint("TOP", h2.frame, "TOPLEFT", i * (segW + GAP) - GAP / 2, 0)
             t:SetSize(GAP, SECOND_H)
         end
-        h2.native:Restyle(function(b) b:SetSize(w, SECOND_H) end)
+        h2.native:Restyle(function(b) b:SetSize(sw, SECOND_H) end)
     end
     self:Update()
 end

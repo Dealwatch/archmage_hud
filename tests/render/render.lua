@@ -72,6 +72,11 @@ rec("SetVertexColor", function(self, r, g, b, a) self._vc = { r, g, b, a or 1 } 
 rec("SetColorTexture", function(self, r, g, b, a) self._tex = "COLOR"; self._vc = { r, g, b, a or 1 } end)
 rec("SetStatusBarColor", function(self, r, g, b, a) self._sbc = { r, g, b, a or 1 } end)
 rec("SetStatusBarTexture", function(self, t) self._sbt = t end)
+-- the fill of a status bar as a region: things anchored to it follow the value (see rect)
+rec("GetStatusBarTexture", function(self)
+    if not self._fillTex then self._fillTex = Object.CreateTexture(self); self._fillTex._fillOf = self end
+    return self._fillTex
+end)
 rec("SetTextColor", function(self, r, g, b, a) self._tc = { r, g, b, a or 1 } end)
 rec("SetFont", function(self, path, size, flags) self._fs, self._fl = size, flags; return true end)
 rec("SetJustifyH", function(self, j) self._jh = j end)
@@ -110,7 +115,7 @@ end)
 -- native aura buttons: remember what the client would fill
 rec("SetIcon", function(self, t) self._nIcon = t end)
 rec("SetApplicationCount", function(self, fs) self._nCount = fs end)
-rec("SetApplicationBar", function(self, bar, o) self._nAppBar, self._nMax = bar, o.maxApplications end)
+rec("SetApplicationBar", function(self, bar, o) self._nAppBar, self._nMin, self._nMax = bar, o.minApplications, o.maxApplications end)
 rec("SetDurationBar", function(self, bar) self._nDurBar = bar end)
 rec("SetDurationText", function(self, fs) self._nDurText = fs end)
 rec("SetDurationCooldown", function(self, cd) self._nCd = cd end)
@@ -134,6 +139,12 @@ local function rect(o)
     cache = cache or {}
     if o == UIParent then return { l = 0, b = 0, r = W, t = H } end
     if cache[o] then return cache[o] end
+    if o._fillOf then   -- the filled part of its status bar
+        local br, bar = rect(o._fillOf), o._fillOf
+        local lo, hi, v = bar._min or 0, bar._max or 1, bar._val or 0
+        local frac = type(v) == "number" and type(hi) == "number" and hi > lo and math.max(0, math.min(1, (v - lo) / (hi - lo))) or 0
+        return { l = br.l, r = br.l + (br.r - br.l) * frac, b = br.b, t = br.t }
+    end
     cache[o] = { l = 0, b = 0, r = 0, t = 0 }   -- cycle guard
     local xs, ys = {}, {}
     for _, p in ipairs(o._pts or {}) do
@@ -231,7 +242,7 @@ local function draw(o, list, idx)
     local key = { strata(o), level(o), 0, o._sub or 0, idx }
     local html
     if o._kind == "Texture" then
-        if r.nopts then return end
+        if r.nopts or w <= 0 or h <= 0 then return end   -- crossed anchors: not drawn, as in the client
         key[2] = level(o._parent); key[3] = LAYER[o._layer or "ARTWORK"] or 3
         local t = o._tex
         local file = iconFile(t)

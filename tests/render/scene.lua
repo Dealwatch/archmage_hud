@@ -78,6 +78,16 @@ local function fillSecond(spec, n)   -- the thin second stack bar (Arcane: Heati
     local b = NS.Native.slots["stacks2_" .. spec].button
     b:Show(); b._nAppBar:SetMinMaxValues(0, b._nMax); b._nAppBar:SetValue(n)
 end
+-- rotation marks: the client lights one up when the stacks reach its number (n2: the second aura's stacks)
+local function fillMarks(spec, n, n2)
+    for key, h in pairs(NS.Native.slots) do
+        local second = key:match("^mark2_" .. spec)
+        if second or key:match("^mark_" .. spec) then
+            local b = h.button
+            b:Show(); b._nAppBar:SetMinMaxValues(b._nMin, b._nMax); b._nAppBar:SetValue(second and n2 or n)
+        end
+    end
+end
 -- nothing up: what the client shows in the native slots out of combat
 local function clearNative()
     for key, h in pairs(NS.Native.slots) do
@@ -153,7 +163,7 @@ book("fire")
 C.setMana(620)
 combat(true)
 C.fire("UNIT_POWER_FREQUENT", "player", "MANA")
-fillStacks("fire", 3, "16.2"); mana(620)
+fillStacks("fire", 3, "16.2"); fillMarks("fire", 3); mana(620)
 NS.modules.stacks.state.full = true; NS.modules.stacks:Draw()     -- readable full stacks (glow + hint)
 fillProcs("fire", { { "combustion", "2" }, { "wakeOfFire" }, { "missileBarrage" } })
 fillDebuff("fireVuln", .81, "24.3", "5"); fillDebuff("fireball", .55, "4.4"); fillDebuff("ignite", .52, "2.1")
@@ -163,6 +173,11 @@ C.fire("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", 11366)
 C.fire("SPELL_UPDATE_COOLDOWN")
 castNow("Fireball", 25306, 3.5, 1.3)
 C.tick(0.1); shot("hud_fire", "Fire, in combat: Heating Up 3/3, four debuffs, proc card", HUD)
+-- the same moment as the addon really gets it in combat: stacks secret, the client does not light
+-- Pyroblast up. No gold bar, no hint, no card - the mark the client lights is what tells you
+C.fire("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", 11366)
+NS.modules.stacks.state.full = false; NS.modules.stacks:Draw()
+shot("hud_fire_secret", "Fire, in combat, stacks secret and no spell glow: the lit mark still says Pyroblast", HUD)
 C.fire("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", 11366); castEnd()
 combat(false)
 
@@ -170,7 +185,7 @@ combat(false)
 book("frost")
 focus(true)
 combat(true)
-fillStacks("frost", 3, "11.8"); mana(710)
+fillStacks("frost", 3, "11.8"); fillMarks("frost", 3); mana(710)
 NS.modules.stacks.state.full = false; NS.modules.stacks:Draw()
 fillProcs("frost", { { "fingersOfFrost", "2" }, { "clearcasting" } })
 fillDebuff("frostNova", .72, "5.8"); fillDebuff("frostbite", nil); fillDebuff("polymorph", .62, "31.0")
@@ -189,13 +204,13 @@ combat(true)
 C.fire("UNIT_POWER_FREQUENT", "player", "MANA")
 fillStacks("arcane", 4, "11.4"); mana(240, true)
 NS.modules.stacks.state.full = true; NS.modules.stacks:Draw()
-fillSecond("arcane", 2)
+fillSecond("arcane", 2); fillMarks("arcane", 4, 2)
 fillProcs("arcane", { { "missileBarrage" }, { "clearcasting" }, { "arcanePower" } })
 fillDebuff("polymorph", nil)
 fillAbsorb("manaShield")
 C.fire("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", 5143)
 castNow("Arcane Missiles", 5143, 2.5, 1.0, true)
-C.tick(0.1); shot("hud_arcane", "Arcane, in combat: 4 Arcane Blast stacks, 2 Heating Up, low mana", HUD)
+C.tick(0.1); shot("hud_arcane", "Arcane, in combat: 4 Arcane Blast stacks (Wrath and Arcane Power lit), 2 Heating Up (Pyroblast not yet), low mana", HUD)
 C.fire("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", 5143); castEnd()
 combat(false)
 

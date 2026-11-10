@@ -299,7 +299,7 @@ local function buildPages()
         c:Add(W.Toggle(c, "Glow at full stacks", nil, bind("stacks", "glow")))
         c:Add(W.Toggle(c, "Sound at full stacks", nil, bind("stacks", "sound")))
         c:Add(W.Toggle(c, "Hide at zero stacks out of combat", nil, bind("stacks", "hideEmpty")))
-        c:Add(W.Toggle(c, "Rotation marks", "Small icons under the segments: what to cast at which stack.", bind("stacks", "marks")))
+        c:Add(W.Toggle(c, "Rotation marks", "Icons under the stack bar that light up when it is time to cast them.", bind("stacks", "marks")))
         local info = c:Add(W.ButtonRow(c, "Detection", "The client fills the bar itself (native aura slot), also in combat. Glow and sound need the aura to be readable.", "Run probe", function() NS.commands.probe() end))
         local base = info.Refresh
         function info:Refresh()

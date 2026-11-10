@@ -97,6 +97,7 @@ function Object:SetScrollChild(c) self._child = c end
 function Object:GetScrollChild() return self._child end
 function Object:GetThumbTexture() return self._thumb end
 function Object:SetThumbTexture() self._thumb = newObject("Texture", self) end
+function Object:GetStatusBarTexture() self._fill = self._fill or newObject("Texture", self); return self._fill end
 function Object:RegisterEvent(e)
     eventFrames[e] = eventFrames[e] or {}
     eventFrames[e][self] = true
@@ -332,7 +333,7 @@ run("login", function()
     assert(not NS.Spells:Get("iceBarrier").known, "unknown spell stays unknown")
     assert(NS.spec == "fire", "auto spec from talent spells: " .. tostring(NS.spec))
     for _, key in ipairs({ "stacks_fire", "stacks_frost", "procs_fire", "debuff_frostfireBolt", "debuff_fireVuln", "stacks_arcane", "absorb",
-        "stacks2_arcane", "debuff_polymorph" }) do
+        "stacks2_arcane", "debuff_polymorph", "mark_arcane3", "mark_arcane4", "mark2_arcane3", "mark_fire3", "mark_frost5" }) do
         assert(NS.Native.slots[key] and NS.Native.slots[key]:Active(), "native slot " .. key)
     end
     assert(NS.Native.slots.stacks_fire.container._ids[400625], "heating up buff id in filter")
@@ -371,7 +372,7 @@ run("automatic layout per spec", function()
     local cd = {}
     for _, spec in ipairs({ "fire", "frost", "arcane" }) do
         NS:SetSpec(spec)
-        cd[spec] = L.Column().cooldowns[4]
+        cd[spec] = L.Column().focus[4]
         if spec == "fire" then
             assert(L.DebuffRows() == 4, "fire: 4 debuff rows (Ignite/Fire Vulnerability are talent effects) " .. L.DebuffRows())
             SPELLS[1312002] = "Ice Lance"
@@ -380,7 +381,7 @@ run("automatic layout per spec", function()
             assert(L.DebuffRows() == 5, "frostfire build adds the Frostfire Bolt row")
             BOOK[#BOOK] = nil
             NS.Spells:Resolve()
-            cd.fire = L.Column().cooldowns[4]
+            cd.fire = L.Column().focus[4]
         end
         if spec == "frost" then
             assert(L.DebuffRows() == 2, "frost: Frost Nova + Frostbite (talent known)")
@@ -392,9 +393,11 @@ run("automatic layout per spec", function()
         end
         if spec == "arcane" then assert(L.DebuffRows() == 0, "arcane: no debuff rows") end
     end
-    assert(cd.arcane > cd.frost and cd.frost > cd.fire, "cooldown row closes up when a spec has fewer rows")
+    assert(cd.arcane > cd.frost and cd.frost > cd.fire, "the column closes up when a spec has fewer debuff rows")
+    assert(L.Column().debuffs[4] < L.Column().cooldowns[4] and L.Column().cooldowns[4] < L.Column().castbar[4],
+        "cooldown row between the cast bar and the debuffs")
     NS:SetModuleEnabled("mana", false)
-    assert(L.Column().cooldowns[4] > cd.arcane, "switched-off module takes no space")
+    assert(L.Column().focus[4] > cd.arcane, "switched-off module takes no space")
     NS:SetModuleEnabled("mana", true)
     -- a moved frame is saved for that spec only
     NS.Movers.Positions().mana = { x = 10, y = -300 }
@@ -534,19 +537,27 @@ run("edit mode", function()
     assert(not _G.ArchmageHUDProcCard:IsShown(), "proc card hidden again")
 end)
 
-run("rotation marks, second bar, cooldown tiers, mana tools", function()
-    NS:SetSpec("arcane")
+run("rotation marks, Heating Up pips, cooldown tiers, mana tools", function()
     local St = NS.modules.stacks
-    assert(St.marks[1]:IsShown(), "Fire Blast mark under the Arcane Blast bar")
-    assert(not St.marks[2]:IsShown(), "no mark for a spell you do not know (Arcane Wrath)")
-    for _, k in ipairs(NS.Spells.SPEC_DATA.arcane.procs) do assert(k ~= "heatingUp", "Heating Up is the second bar, not a proc icon") end
+    local function mark(spec, n, second)
+        for _, m in ipairs(St.marks) do if m.spec == spec and m.n == n and m.second == (second or false) then return m end end
+    end
+    NS.db.stacks.hideEmpty = false      -- the stack bar (and its marks) also at 0 stacks out of combat
+    NS:ApplyAll()
+    assert(mark("fire", 3):IsShown() and NS.Native.slots.mark_fire3:Active(), "Fire: Pyroblast mark, lit by the client at 3 Heating Up")
+    assert(not mark("arcane", 3):IsShown(), "marks of another spec stay hidden")
+    NS:SetSpec("arcane")
+    assert(not mark("fire", 3):IsShown(), "spec switched: Fire's mark is gone")
+    assert(not mark("arcane", 3):IsShown(), "no mark for a spell you do not know (Arcane Wrath)")
+    assert(mark("arcane", 3, true):IsShown() and NS.Native.slots.mark2_arcane3:Active(), "Arcane: Pyroblast mark at the Heating Up pips")
+    for _, k in ipairs(NS.Spells.SPEC_DATA.arcane.procs) do assert(k ~= "heatingUp", "Heating Up is pips under the bar, not a proc icon") end
     local with = NS.Layout.Column().mana[4]
     NS.db.stacks.marks = false
     NS:ApplyAll()
-    assert(not St.marks[1]:IsShown() and NS.Layout.Column().mana[4] > with, "marks off: the row closes up")
+    assert(not mark("arcane", 3, true):IsShown() and NS.Layout.Column().mana[4] > with, "marks off: the row shrinks to the pips")
     NS.db.stacks.marks = true
+    NS.db.stacks.hideEmpty = true
     NS:SetSpec("auto")
-    assert(NS.Layout.Column().opener[4] < NS.Layout.Column().cooldowns[4], "opener under the cooldown row")
     -- cooldown row: rotation spells large, utility small; Evocation sits at the mana bar instead
     local size = {}
     for _, f in ipairs(allFrames) do if f.cd and f.key and f._parent == _G.ArchmageHUDCooldowns and f._shown then size[f.key] = f:GetWidth() end end
@@ -578,6 +589,10 @@ run("opener", function()
     assert(not f:IsShown(), "gone when the opener is through")
     fire("PLAYER_TARGET_CHANGED")
     assert(f:IsShown() and st.step == 1, "a new target out of combat starts it again")
+    fire("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", 11366)
+    assert(_G.ArchmageHUDProcCard:IsShown() and not f:IsShown(), "the proc card takes the spot while it shows")
+    fire("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", 11366)
+    assert(f:IsShown(), "and the opener is back after it")
     NS:SetModuleEnabled("opener", false)
     assert(not f:IsShown(), "module off")
     NS:SetModuleEnabled("opener", true)
@@ -593,11 +608,10 @@ run("polymorph on the focus", function()
     local exists = UnitExists
     UnitExists = function(unit) return unit ~= "focus" end
     fire("PLAYER_FOCUS_CHANGED")
-    local opener = NS.Layout.Column().opener[4]
     assert(not f:IsShown(), "no focus: no row")
     UnitExists = exists
     fire("PLAYER_FOCUS_CHANGED")
-    assert(f:IsShown() and NS.Layout.Column().opener[4] < opener, "with a focus the row is back and the opener sits below it")
+    assert(f:IsShown(), "with a focus the row is back")
     NS.db.debuffs.focus = false
     NS:ApplyAll()
     assert(not f:IsShown(), "setting off")
@@ -679,6 +693,11 @@ run("stacks out of combat", function()
     local st = NS.modules.stacks.state
     assert(st.stacks == 3 and st.full, "three Heating Up stacks read")
     assert(NS.modules.stacks.hint:IsShown(), "Pyroblast hint at full stacks")
+    NS.db.stacks.width = 40
+    NS.modules.stacks:Draw()
+    assert(not NS.modules.stacks.hint:IsShown(), "a bar too narrow for the hint leaves it to the lit mark")
+    NS.db.stacks.width = 240
+    NS.modules.stacks:Draw()
     playerAuras[3] = nil
     fire("UNIT_AURA", "player", {})
     assert(st.stacks == 0 and not st.full, "gone")

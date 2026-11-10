@@ -14,14 +14,13 @@ local UI = NS.UI
 local LEGEND_SECS = 10
 local TIPS = {
     alerts = "Reminders: right-click one to snooze it",
-    proccard = "Shows while the client offers this spell",
+    proccard = "Cast this now (the client offers it). Before the pull: your opener",
     procs = "Procs and burst buffs that are up right now",
     stacks = function() return NS.Spells.SPEC_DATA[NS.spec].stacks.tip end,
     mana = "Mana, red when low; gem and Evocation beside it",
     castbar = "Your cast or channel",
     debuffs = "Your debuffs on the target, with the time left",
-    cooldowns = "Rotation spells large, utility small",
-    opener = "Your opener: the framed icon is next",
+    cooldowns = "Bright: ready. Rotation spells large, utility small",
     focus = "Polymorph on your focus",
     absorb = "Ice Barrier / Mana Shield; dim: not up",
 }

@@ -115,17 +115,18 @@ Spells.DEFS = DEFS
 --   debuffs   your debuffs on the target, one bar each
 --   cooldowns spec cooldowns, in front of the shared ones
 --   card      spell shown on the proc card in edit mode
---   stacks.marks  rotation marks under the stack bar: { position in segments from the left, spell keys
---                 (the first one you know) }; stacks.tip is the sentence of /mage legend
---   second    a second, thin stack bar under the first (Arcane hybrid: Heating Up)
+--   stacks.marks  rotation marks under the stack bar: { stacks at which to cast, spell keys (the first one
+--                 you know) }; the client lights the icon up at that many stacks. stacks.tip: /mage legend
+--   second    a second stacking aura, as small pips in the row of the marks, with its own mark
+--             (Arcane hybrid: Pyroblast at 3 Heating Up)
 --   opener    the first casts of a fight, in order (Warcraft Tavern / mmonster Forever guides, Nov 2026)
 Spells.SPEC_DATA = {
     arcane = {
         procs = { "missileBarrage", "clearcasting", "arcanePower", "presenceOfMind" },
         stacks = { key = "arcaneBlast", unit = "player", filter = "HELPFUL", max = 4, full = "Spend: Arcane Wrath",
-                   marks = { { 1, "fireBlast" }, { 3, "arcaneWrath" }, { 3.6, "arcanePower", "presenceOfMind" } },
-                   tip = "Fire Blast at 1-2, Arcane Wrath at 3-4; thin bar: Heating Up" },
-        second = { key = "heatingUp", unit = "player", filter = "HELPFUL", max = 3 },   -- Pyroblast at 3, with 3-4 Arcane Blast
+                   marks = { { 3, "arcaneWrath" }, { 4, "arcanePower", "presenceOfMind" } },   -- Fire Blast: on cooldown, see the cooldown row
+                   tip = "A lit icon below: cast it. The small pips are Heating Up" },
+        second = { key = "heatingUp", unit = "player", filter = "HELPFUL", max = 3, mark = "pyroblast" },
         opener = { "arcaneBlast", "fireBlast", "arcaneBlast", "arcaneWrath" },
         debuffs = {},
         cooldowns = { "arcaneWrath", "fireBlast", "arcanePower", "presenceOfMind" },
@@ -134,7 +135,7 @@ Spells.SPEC_DATA = {
     fire = {
         procs = { "combustion", "wakeOfFire", "clearcasting", "missileBarrage", "fingersOfFrost" },
         stacks = { key = "heatingUp", unit = "player", filter = "HELPFUL", max = 3, full = "Pyroblast!",
-                   marks = { { 2.5, "pyroblast" } }, tip = "Heating Up: Pyroblast at 3 stacks" },
+                   marks = { { 3, "pyroblast" } }, tip = "Heating Up: the Pyroblast icon lights up at 3" },
         opener = { "pyroblast", "fireball", "scorch", "fireBlast" },
         debuffs = { "fireVuln", "fireball", "ignite", "pyroblast", "frostfireBolt" },
         cooldowns = { "fireBlast", "iceLance", "combustion", "blastWave" },
@@ -143,7 +144,7 @@ Spells.SPEC_DATA = {
     frost = {
         procs = { "fingersOfFrost", "clearcasting", "missileBarrage", "presenceOfMind" },
         stacks = { key = "wintersChill", unit = "target", filter = "HARMFUL|PLAYER", max = 5, full = "Cone of Cold!",
-                   marks = { { 4.5, "coneOfCold" } }, tip = "Winter's Chill on the target: Cone of Cold at 5" },
+                   marks = { { 5, "coneOfCold" } }, tip = "Winter's Chill: the Cone of Cold icon lights up at 5" },
         opener = { "frostbolt", "frostNova", "iceLance", "frostbolt" },
         debuffs = { "frostNova", "frostbite" },
         cooldowns = { "iceLance", "iceBarrier", "coneOfCold", "coldSnap" },

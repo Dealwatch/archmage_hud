@@ -84,6 +84,7 @@ function Procs:DrawCard()
     if NS.editing and not def then def = Spells:Get(Spells.SPEC_DATA[NS.spec].card or "fireball") end
     local show = NS:IsEnabled("procs") and db.card and def ~= nil
     card:SetShown(show and true or false)
+    if NS.modules.opener then NS.modules.opener:Draw() end   -- the opener shares this spot and steps aside
     if not show then UI:Glow(card.iconFrame) return end
     card.iconFrame.icon:SetTexture(def.icon)
     card.text:SetText((def.name or def.en) .. "!")

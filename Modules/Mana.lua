@@ -126,7 +126,7 @@ function Mana:Tools()
         f:SetShown(show)
         if show then
             f:ClearAllPoints()
-            f:SetPoint("LEFT", frame, "RIGHT", x, 0)
+            f:SetPoint("TOPLEFT", frame, "TOPRIGHT", x, 1)   -- hanging down: clear of the stack timer above
             x = x + TOOL + 4
             f.icon:SetTexture(def.icon or "Interface\\Icons\\INV_Misc_QuestionMark")
             if f.key == "evocation" then
