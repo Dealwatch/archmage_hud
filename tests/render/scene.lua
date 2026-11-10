@@ -11,7 +11,7 @@ local DEFS = NS.Spells.DEFS
 for _, d in pairs(DEFS) do for _, id in ipairs(d.ids) do C.SPELLS[id] = C.SPELLS[id] or d.en end end
 C.SPELLS[11119], C.SPELLS[11095], C.SPELLS[11071] = "Ignite", "Improved Scorch", "Frostbite"
 
-local BASE = { 133, 116, 5143, 2136, 2948, 122, 120, 1953, 2139, 12051, 1459, 6117, 1463, 759, 3561 }
+local BASE = { 133, 116, 5143, 2136, 2948, 122, 120, 1953, 2139, 12051, 1459, 6117, 1463, 759, 3561, 118 }
 local SPEC = {
     arcane = { 400574, 1326079, 12043, 12042, 11366 },
     fire = { 11366, 11113, 11129, 401502, 11119, 11095 },
@@ -74,11 +74,27 @@ local function fillDebuff(key, frac, time, count)
     b._nDurBar:SetMinMaxValues(0, 1); b._nDurBar:SetValue(frac)
     b._nDurText:SetText(time); b._nCount:SetText(count or "")
 end
+local function fillSecond(spec, n)   -- the thin second stack bar (Arcane: Heating Up)
+    local b = NS.Native.slots["stacks2_" .. spec].button
+    b:Show(); b._nAppBar:SetMinMaxValues(0, b._nMax); b._nAppBar:SetValue(n)
+end
+-- nothing up: what the client shows in the native slots out of combat
+local function clearNative()
+    for key, h in pairs(NS.Native.slots) do
+        if key:match("^procs_") then for _, b in ipairs(kids(h.container)) do b:Hide() end
+        elseif h.button then h.button:Hide() end
+    end
+end
 local function fillAbsorb(key)
     local b = NS.Native.slots.absorb.button
     if not key then b:Hide() return end
     b:Show(); b._nIcon:SetTexture(tex(key))
 end
+
+-- a focus only where a scene says so (the fake client's UnitExists is always true)
+local hasFocus = false
+UnitExists = function(unit) if unit == "focus" then return hasFocus end return true end
+local function focus(on) hasFocus = on; C.fire("PLAYER_FOCUS_CHANGED") end
 
 C.run("login", function() C.fire("PLAYER_LOGIN"); C.fire("PLAYER_ENTERING_WORLD") end)
 C.playerAuras[1] = { name = "Arcane Intellect", spellId = 1459, duration = 3600 }
@@ -126,7 +142,9 @@ local function shot(file, title, crop)
     end
 end
 local function combat(on)
-    if on then C.fire("PLAYER_REGEN_DISABLED"); C.setCombat(true); C.fire("PLAYER_ENTER_COMBAT")
+    if on then
+        C.fire("PLAYER_REGEN_DISABLED"); C.setCombat(true); C.fire("PLAYER_ENTER_COMBAT")
+        C.tick(25); NS.modules.opener:Draw()   -- mid-fight: the opener strip is long gone
     else C.setCombat(false); C.fire("PLAYER_REGEN_ENABLED") end
 end
 
@@ -139,7 +157,7 @@ fillStacks("fire", 3, "16.2"); mana(620)
 NS.modules.stacks.state.full = true; NS.modules.stacks:Draw()     -- readable full stacks (glow + hint)
 fillProcs("fire", { { "combustion", "2" }, { "wakeOfFire" }, { "missileBarrage" } })
 fillDebuff("fireVuln", .81, "24.3", "5"); fillDebuff("fireball", .55, "4.4"); fillDebuff("ignite", .52, "2.1")
-fillDebuff("pyroblast", .78, "9.4"); fillDebuff("frostfireBolt", nil)
+fillDebuff("pyroblast", .78, "9.4"); fillDebuff("frostfireBolt", nil); fillDebuff("polymorph", nil)
 fillAbsorb(nil)
 C.fire("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", 11366)
 C.fire("SPELL_UPDATE_COOLDOWN")
@@ -150,17 +168,19 @@ combat(false)
 
 -- FROST
 book("frost")
+focus(true)
 combat(true)
 fillStacks("frost", 3, "11.8"); mana(710)
 NS.modules.stacks.state.full = false; NS.modules.stacks:Draw()
 fillProcs("frost", { { "fingersOfFrost", "2" }, { "clearcasting" } })
-fillDebuff("frostNova", .72, "5.8"); fillDebuff("frostbite", nil)
+fillDebuff("frostNova", .72, "5.8"); fillDebuff("frostbite", nil); fillDebuff("polymorph", .62, "31.0")
 fillAbsorb(nil)          -- Ice Barrier gone: the red pulsing icon shows through
 C.fire("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", 1312002)
 castNow("Frostbolt", 25304, 3.0, 2.1)
-C.tick(0.1); shot("hud_frost", "Frost, in combat: Winter's Chill 3/5, target frozen, Ice Barrier missing", HUD)
+C.tick(0.1); shot("hud_frost", "Frost, in combat: Winter's Chill 3/5, target frozen, Ice Barrier missing, focus sheeped", HUD)
 C.fire("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", 1312002); castEnd()
 combat(false)
+focus(false)
 
 -- ARCANE
 book("arcane")
@@ -169,13 +189,24 @@ combat(true)
 C.fire("UNIT_POWER_FREQUENT", "player", "MANA")
 fillStacks("arcane", 4, "11.4"); mana(240, true)
 NS.modules.stacks.state.full = true; NS.modules.stacks:Draw()
-fillProcs("arcane", { { "missileBarrage" }, { "heatingUp", "2" }, { "arcanePower" } })
+fillSecond("arcane", 2)
+fillProcs("arcane", { { "missileBarrage" }, { "clearcasting" }, { "arcanePower" } })
+fillDebuff("polymorph", nil)
 fillAbsorb("manaShield")
 C.fire("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", 5143)
 castNow("Arcane Missiles", 5143, 2.5, 1.0, true)
-C.tick(0.1); shot("hud_arcane", "Arcane, in combat: 4 Arcane Blast stacks, low mana", HUD)
+C.tick(0.1); shot("hud_arcane", "Arcane, in combat: 4 Arcane Blast stacks, 2 Heating Up, low mana", HUD)
 C.fire("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", 5143); castEnd()
 combat(false)
+
+-- before the pull: enemy targeted out of combat, two casts into the opener
+book("frost")
+clearNative()
+C.setMana(1000); C.fire("UNIT_POWER_FREQUENT", "player", "MANA")
+C.fire("PLAYER_TARGET_CHANGED")
+C.fire("UNIT_SPELLCAST_SUCCEEDED", "player", "g", 116); C.fire("UNIT_SPELLCAST_SUCCEEDED", "player", "g", 122)
+C.tick(0.1); shot("prepull", "Frost, before the pull: opener two casts in (Frostbolt, Frost Nova done; Ice Lance next)", HUD)
+book("fire")
 
 -- out of combat: alerts
 C.playerAuras[1], C.playerAuras[2] = nil, nil
@@ -184,13 +215,22 @@ C.fire("UNIT_AURA", "player", {}); C.fire("BAG_UPDATE_DELAYED")
 UnitCanAttack = function() return false end
 C.fire("PLAYER_TARGET_CHANGED")
 shot("alerts", "Out of combat, no enemy targeted: HUD hidden, only alerts", "560,0,800,420")
+GetWeaponEnchantInfo = function() return false end
+C.fire("READY_CHECK")
+shot("ready", "Ready check: one card with the consumables that are missing", "560,0,800,470")
+C.fire("READY_CHECK_FINISHED")
 UnitCanAttack = function() return true end
 C.fire("PLAYER_TARGET_CHANGED")
 
 -- edit mode
 book("fire")
 SlashCmdList.ARCHMAGEHUD("edit")
-shot("edit", "Edit mode (Fire)", "0,0,1920,1080")
+C.tick(0.1); shot("edit", "Edit mode (Fire)", "0,0,1920,1080")
+NS.Movers:Toggle(false)
+
+-- legend: one sentence beside every element
+SlashCmdList.ARCHMAGEHUD("legend")
+C.tick(0.1); shot("legend", "Legend (/mage legend), Fire", "440,150,1040,800")
 NS.Movers:Toggle(false)
 
 -- settings window, every page
@@ -198,5 +238,14 @@ SlashCmdList.ARCHMAGEHUD("")
 for _, p in ipairs({ "overview", "mana", "castbar", "procs", "stacks", "debuffs", "cooldowns", "reminders", "appearance" }) do
     NS.Options:Show(p)
     X.render("opt_" .. p, "Settings: " .. p, "490,210,940,660")
+    -- a page longer than the window: once more, scrolled to its end
+    local scroll = _G.ArchmageHUDOptions.scroll
+    local view = X.rect(scroll)
+    local more = scroll:GetScrollChild():GetHeight() - (view.t - view.b)
+    if more > 0 then
+        scroll:SetVerticalScroll(more)
+        X.render("opt_" .. p .. "_2", "Settings: " .. p .. " (scrolled to the end)", "490,210,940,660")
+        scroll:SetVerticalScroll(0)
+    end
 end
 print("rendered")

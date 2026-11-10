@@ -144,7 +144,7 @@ NS.defaults = {
     spec = "auto",              -- "auto" (from talents) | "arcane" | "fire" | "frost"
     modules = {
         mana = true, castbar = true, procs = true, stacks = true, debuffs = true,
-        cooldowns = true, reminders = true,
+        cooldowns = true, opener = true, reminders = true,
     },
     positions = {},
     appearance = {
@@ -163,6 +163,7 @@ NS.defaults = {
         showText = false,       -- percentage on the bar
         hideFull = true,        -- hide out of combat at full mana
         lowPct = 25,            -- bar turns red below this
+        tools = true,           -- mana gem and Evocation as two small icons at the end of the bar
     },
     castbar = {
         width = 240, height = 14,
@@ -179,9 +180,11 @@ NS.defaults = {
         glow = true,            -- glow at full stacks
         sound = true,
         hideEmpty = true,       -- hide out of combat at 0 stacks
+        marks = true,           -- rotation marks under the segments (what to cast at which stack)
     },
     debuffs = {
         width = 240, height = 16,
+        focus = true,           -- Polymorph timer for your focus
     },
     cooldowns = {
         size = 30,
@@ -194,6 +197,7 @@ NS.defaults = {
         gem = true,             -- no mana gem in the bags
         reagents = true,        -- low on teleport / portal runes
         reagentMin = 3,
+        ready = true,           -- at a ready check: "all set" or the consumables that are missing
         inCombat = false,       -- buff reminders also in combat
         snooze = 60,
         absorbIcon = true,      -- Ice Barrier / Mana Shield icon (native aura slot)
@@ -293,6 +297,39 @@ function NS:SetModuleEnabled(key, on)
     self:ApplyAll()
 end
 
+-- Presets: how much HUD, as one switch in the overview. The one whose values all match is active.
+-- extras: rotation marks under the stack bar and the Polymorph timer.
+NS.PRESETS = {
+    { key = "minimal",  label = "Minimal",  modules = "castbar procs stacks", extras = false },
+    { key = "standard", label = "Standard", modules = "mana castbar procs stacks debuffs cooldowns reminders", extras = false },
+    { key = "full",     label = "Full",     modules = "mana castbar procs stacks debuffs cooldowns reminders opener", extras = true },
+}
+
+local function presetValues(p)   -- { { section, key, value }, ... }
+    local out = { { "stacks", "marks", p.extras }, { "debuffs", "focus", p.extras } }
+    for key in pairs(NS.defaults.modules) do
+        out[#out + 1] = { "modules", key, (" " .. p.modules .. " "):find(" " .. key .. " ", 1, true) ~= nil }
+    end
+    return out
+end
+
+function NS:Preset()
+    for _, p in ipairs(self.PRESETS) do
+        local match = true
+        for _, v in ipairs(presetValues(p)) do if self.db[v[1]][v[2]] ~= v[3] then match = false end end
+        if match then return p.key end
+    end
+end
+
+function NS:SetPreset(key)
+    for _, p in ipairs(self.PRESETS) do
+        if p.key == key then
+            for _, v in ipairs(presetValues(p)) do self.db[v[1]][v[2]] = v[3] end
+        end
+    end
+    self:ApplyAll()
+end
+
 function NS:ApplyAll()
     for _, key in ipairs(self.moduleOrder) do
         local m = self.modules[key]
@@ -352,6 +389,10 @@ NS.commands = commands
 commands[""] = function() if NS.Options then NS.Options:Toggle() end end
 commands["edit"] = function() if NS.Movers then NS.Movers:Toggle() end end
 commands["test"] = function() if NS.Alerts then NS.Alerts:Test() end end
+commands["legend"] = function()
+    if NS.Options and NS.Options:IsShown() then NS.Options:Toggle() end   -- the window would cover the HUD
+    NS.Movers:Toggle(true, true)
+end
 for _, sp in ipairs(NS.SPECS) do
     commands[sp.key] = function() NS:SetSpec(sp.key); NS.Print("spec: " .. sp.label) end
 end
@@ -373,6 +414,7 @@ commands["help"] = function()
     print("  /mage - settings window")
     print("  /mage arcane | fire | frost | auto - switch spec")
     print("  /mage edit - move frames")
+    print("  /mage legend - what each HUD element is for (10 seconds)")
     print("  /mage test - preview alerts")
     print("  /mage probe - what Forever lets the addon read (use it in combat too)")
     print("  /mage spells - copyable list of your spells and their IDs")

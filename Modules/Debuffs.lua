@@ -20,7 +20,7 @@ local Db = NS:NewModule("debuffs", {
 })
 
 local GAP = 2
-local frame
+local frame, focus      -- your debuffs on the target; the Polymorph timer of your focus
 local rows = {}         -- key -> row (shared between specs)
 local timers = {}       -- key -> { start, ends }
 
@@ -31,10 +31,11 @@ local function duration(key)
     return (d and NS.db.learned.durations[d.name]) or (d and d.dur) or 12
 end
 
-local function buildRow(key)
+local function buildRow(key, parent, unit)
     local db = NS.db.debuffs
     local h = db.height
-    local r = CreateFrame("Frame", nil, frame)
+    local r = CreateFrame("Frame", nil, parent)
+    r.unit = unit
     r:SetSize(db.width, h)
     r:Hide()
     UI:NativeHost(r)
@@ -52,7 +53,7 @@ local function buildRow(key)
     local color = d and d.color or { 1, 0.45, 0.16 }
     r.bar:SetStatusBarColor(color[1], color[2], color[3])
     r.native = NS.Native:Slot({
-        key = "debuff_" .. key, parent = r, unit = "target", filter = "HARMFUL|PLAYER",
+        key = "debuff_" .. key, parent = r, unit = unit, filter = "HARMFUL|PLAYER",
         ids = function() return Spells:AuraIDs(key) end,
         init = function(b)
             local bw, bh = NS.db.debuffs.width, NS.db.debuffs.height
@@ -104,6 +105,8 @@ function Db:DrawRow(r)
         return
     end
     if left <= 0 then
+        -- nothing running: a target row stays as a dim placeholder, the focus row goes away
+        r.iconFrame:SetShown(r.unit == "target"); r.bar:SetShown(r.unit == "target")
         r.bar:SetValue(0); r.time:SetText("")
         r.iconFrame:SetAlpha(0.35)
         return
@@ -118,7 +121,7 @@ local function readTarget()
     if not (C_UnitAuras and C_UnitAuras.GetAuraDataBySpellName) then return end
     for key, t in pairs(timers) do
         local d = Spells:Get(key)
-        local ok, aura = pcall(C_UnitAuras.GetAuraDataBySpellName, "target", d.name, "HARMFUL|PLAYER")
+        local ok, aura = pcall(C_UnitAuras.GetAuraDataBySpellName, rows[key].unit, d.name, "HARMFUL|PLAYER")
         if ok and aura and not NS.IsSecret(aura) then
             if not NS.db.learned.seen[key] then
                 NS.db.learned.seen[key] = true
@@ -143,11 +146,27 @@ function Db:Init()
     self.frame = frame
     NS.Movers:Register(frame, "debuffs", "Target debuffs", NS.Layout.For("debuffs"))   -- grows down
 
+    -- Polymorph on your focus: the same bar, its own frame under the HUD column (before the rows: building one applies)
+    focus = CreateFrame("Frame", "ArchmageHUDFocus", UIParent)
+    focus:SetSize(NS.db.debuffs.width, NS.db.debuffs.height)
+    focus:Hide()
+    UI:NativeHost(focus)
+    NS.Movers:Register(focus, "focus", "Polymorph", NS.Layout.For("focus"))
+
     for _, sp in ipairs(NS.SPECS) do
         for _, key in ipairs(list(sp.key)) do
-            if not rows[key] then buildRow(key) end
+            if not rows[key] then buildRow(key, frame, "target") end
         end
     end
+
+    buildRow("polymorph", focus, "focus"):SetPoint("TOPLEFT")
+    NS:OnUnit("UNIT_AURA", "focus", readTarget)
+    NS:On("PLAYER_FOCUS_CHANGED", function()
+        timers.polymorph.ends = 0
+        readTarget()
+        rows.polymorph.native:Refresh()
+        self:ShowFocus()
+    end)
 
     NS:OnUnit("UNIT_SPELLCAST_SUCCEEDED", "player", function(_, _, _, spellID)
         local cast = Spells:KeyFor(spellID)
@@ -172,6 +191,13 @@ function Db:Init()
     NS:On("MF_SPELLS", function() self:Apply() end)
 end
 
+-- The Polymorph row comes and goes with your focus, also in combat (by alpha there).
+function Db:ShowFocus()
+    local show = NS.Layout.FocusRow()
+    UI:SafeShow(focus, show)
+    if rows.polymorph then UI:SafeShow(rows.polymorph, show) end
+end
+
 function Db:Apply()
     if not frame then return end
     -- rows host aura containers: move and resize them only out of combat
@@ -194,6 +220,8 @@ function Db:Apply()
     end
     frame:SetSize(db.width, math.max(y - GAP, db.height))
     UI:SafeShow(frame, on and n > 0)
+    active.polymorph = NS.Layout.FocusRow()
+    focus:SetSize(db.width, db.height)
     for key, r in pairs(rows) do
         local d = Spells:Get(key)
         r.iconFrame.icon:SetTexture(d.icon)
@@ -209,4 +237,5 @@ function Db:Apply()
             end
         end)
     end
+    self:ShowFocus()
 end

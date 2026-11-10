@@ -75,6 +75,8 @@ local DEFS = {
     mageArmor       = { en = "Mage Armor",        ids = { 6117, 22782, 22783 } },
     manaShield      = { en = "Mana Shield",       ids = { 1463, 8494, 8495, 10191, 10192, 10193 } },
     conjureGem      = { en = "Conjure Mana Agate", ids = { 759, 3552, 10053, 10054 } },  -- every rank has its own name
+    gemUse          = { en = "Replenish Mana",    ids = { 5405, 10052, 10057, 10058 } },   -- using a mana gem: your own cast starts its 2 min cooldown
+    polymorph       = { en = "Polymorph",         ids = { 118, 12824, 12825, 12826, 28270, 28271, 28272 }, dur = 50, color = { 0.80, 0.55, 1 } },
 
     -- Travel (only used to know whether the rune reminder applies)
     teleStormwind   = { en = "Teleport: Stormwind",     ids = { 3561 },  group = "teleport" },
@@ -113,24 +115,36 @@ Spells.DEFS = DEFS
 --   debuffs   your debuffs on the target, one bar each
 --   cooldowns spec cooldowns, in front of the shared ones
 --   card      spell shown on the proc card in edit mode
+--   stacks.marks  rotation marks under the stack bar: { position in segments from the left, spell keys
+--                 (the first one you know) }; stacks.tip is the sentence of /mage legend
+--   second    a second, thin stack bar under the first (Arcane hybrid: Heating Up)
+--   opener    the first casts of a fight, in order (Warcraft Tavern / mmonster Forever guides, Nov 2026)
 Spells.SPEC_DATA = {
     arcane = {
-        procs = { "missileBarrage", "clearcasting", "heatingUp", "arcanePower", "presenceOfMind" },
-        stacks = { key = "arcaneBlast", unit = "player", filter = "HELPFUL", max = 4, full = "Spend: Arcane Wrath" },
+        procs = { "missileBarrage", "clearcasting", "arcanePower", "presenceOfMind" },
+        stacks = { key = "arcaneBlast", unit = "player", filter = "HELPFUL", max = 4, full = "Spend: Arcane Wrath",
+                   marks = { { 1, "fireBlast" }, { 3, "arcaneWrath" }, { 3.6, "arcanePower", "presenceOfMind" } },
+                   tip = "Fire Blast at 1-2, Arcane Wrath at 3-4; thin bar: Heating Up" },
+        second = { key = "heatingUp", unit = "player", filter = "HELPFUL", max = 3 },   -- Pyroblast at 3, with 3-4 Arcane Blast
+        opener = { "arcaneBlast", "fireBlast", "arcaneBlast", "arcaneWrath" },
         debuffs = {},
         cooldowns = { "arcaneWrath", "fireBlast", "arcanePower", "presenceOfMind" },
         card = "arcaneMissiles",
     },
     fire = {
         procs = { "combustion", "wakeOfFire", "clearcasting", "missileBarrage", "fingersOfFrost" },
-        stacks = { key = "heatingUp", unit = "player", filter = "HELPFUL", max = 3, full = "Pyroblast!" },
+        stacks = { key = "heatingUp", unit = "player", filter = "HELPFUL", max = 3, full = "Pyroblast!",
+                   marks = { { 2.5, "pyroblast" } }, tip = "Heating Up: Pyroblast at 3 stacks" },
+        opener = { "pyroblast", "fireball", "scorch", "fireBlast" },
         debuffs = { "fireVuln", "fireball", "ignite", "pyroblast", "frostfireBolt" },
         cooldowns = { "fireBlast", "iceLance", "combustion", "blastWave" },
         card = "pyroblast",
     },
     frost = {
         procs = { "fingersOfFrost", "clearcasting", "missileBarrage", "presenceOfMind" },
-        stacks = { key = "wintersChill", unit = "target", filter = "HARMFUL|PLAYER", max = 5, full = "Cone of Cold!" },
+        stacks = { key = "wintersChill", unit = "target", filter = "HARMFUL|PLAYER", max = 5, full = "Cone of Cold!",
+                   marks = { { 4.5, "coneOfCold" } }, tip = "Winter's Chill on the target: Cone of Cold at 5" },
+        opener = { "frostbolt", "frostNova", "iceLance", "frostbolt" },
         debuffs = { "frostNova", "frostbite" },
         cooldowns = { "iceLance", "iceBarrier", "coneOfCold", "coldSnap" },
         card = "iceLance",
@@ -139,6 +153,8 @@ Spells.SPEC_DATA = {
 Spells.SHARED_COOLDOWNS = { "frostNova", "blink", "counterspell", "iceBlock", "evocation" }
 
 Spells.MANA_GEMS = { 5514, 5513, 8007, 8008 }      -- Agate, Jade, Citrine, Ruby
+Spells.MANA_POTIONS = { 2455, 3385, 3827, 6149, 13443, 13444 }          -- Minor ... Major
+Spells.WATER = { 5350, 2288, 2136, 3772, 8077, 8078, 8079 }             -- conjured water, every rank
 Spells.RUNE_TELEPORT = 17031
 Spells.RUNE_PORTALS = 17032
 
@@ -224,6 +240,13 @@ function Spells:Resolve()
 end
 
 function Spells:Get(key) return DEFS[key] end
+
+-- How many of these items are in the bags.
+function Spells.ItemCount(ids)
+    local n = 0
+    for _, id in ipairs(ids) do n = n + (NS.Readable(NS.Try(C_Item and C_Item.GetItemCount, id)) or 0) end   -- a hidden count is no count
+    return n
+end
 
 -- Every ID an aura of this spell may carry (all ranks, buff IDs, the
 -- resolved one), as an array for the native aura filters.

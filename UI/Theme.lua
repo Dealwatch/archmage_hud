@@ -227,6 +227,20 @@ function UI:Cooldown(parent)
     return cd
 end
 
+-- A spell's cooldown on a swirl, without the GCD. GetSpellCooldownDuration returns a duration
+-- object the swirl takes even while the numbers are secret; else the readable numbers.
+function UI:SpellCooldown(cd, id)
+    if C_Spell.GetSpellCooldownDuration then
+        local ok, d = pcall(C_Spell.GetSpellCooldownDuration, id, true)   -- true: ignore the GCD
+        if ok and d and pcall(cd.SetCooldownFromDurationObject, cd, d, true) then return end
+    end
+    local ok, info = pcall(C_Spell.GetSpellCooldown, id)
+    if ok and info then
+        local start, dur = NS.Readable(info.startTime), NS.Readable(info.duration)
+        if start and dur and dur > 1.5 then cd:SetCooldown(start, dur) else cd:Clear() end   -- 1.5: skip the GCD
+    end
+end
+
 ---------------------------------------------------------------------------
 -- Pulse glow (accent border that breathes)
 ---------------------------------------------------------------------------

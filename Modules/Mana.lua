@@ -7,7 +7,7 @@
 ]]
 
 local _, NS = ...
-local UI = NS.UI
+local UI, Spells = NS.UI, NS.Spells
 
 local Mana = NS:NewModule("mana", {
     title = "Mana Bar",
@@ -18,6 +18,9 @@ local Mana = NS:NewModule("mana", {
 local frame, bar, curve
 local MANA = Enum and Enum.PowerType and Enum.PowerType.Mana or 0
 local COLOR = { 0.25, 0.55, 1.0 }
+local tools = {}      -- mana gem and Evocation: two small icons at the end of the bar, where you look at low mana
+local TOOL = 14
+local GEM_CD = 120    -- seconds
 
 function Mana:Init()
     frame = CreateFrame("Frame", "ArchmageHUDMana", UIParent)
@@ -31,6 +34,23 @@ function Mana:Init()
     bar.text:SetPoint("CENTER")
     bar.text:SetJustifyH("CENTER")
     NS.Movers:Register(frame, "mana", "Mana", NS.Layout.For("mana"))
+
+    for i, key in ipairs({ "conjureGem", "evocation" }) do
+        local f = UI:Icon(frame, TOOL)
+        f.cd = UI:Cooldown(f)
+        if f.cd.SetHideCountdownNumbers then f.cd:SetHideCountdownNumbers(true) end   -- too small for numbers
+        f.key = key
+        tools[i] = f
+    end
+    self.tools = tools
+    local function drawTools() self:Tools() end
+    NS:On("SPELL_UPDATE_COOLDOWN", drawTools)
+    NS:On("BAG_UPDATE_DELAYED", drawTools)
+    NS:On("MF_SPELLS", drawTools)
+    -- using a gem is your own cast (never secret): its cooldown runs here even if item cooldowns are hidden
+    NS:OnUnit("UNIT_SPELLCAST_SUCCEEDED", "player", function(_, _, _, spellID)
+        if Spells:KeyFor(spellID) == "gemUse" then tools[1].cd:SetCooldown(GetTime(), GEM_CD) end
+    end)
 
     local function update() self:Update() end
     NS:OnUnit("UNIT_POWER_FREQUENT", "player", update)
@@ -97,11 +117,33 @@ function Mana:Update(enteringCombat)
     bar.text:SetText(frac and string.format("%d%%", math.floor(frac * 100 + 0.5)) or "")
 end
 
+function Mana:Tools()
+    if not frame then return end
+    local x = 6
+    for _, f in ipairs(tools) do
+        local def = Spells:Get(f.key)
+        local show = NS.db.mana.tools and (def.known or NS.editing) or false
+        f:SetShown(show)
+        if show then
+            f:ClearAllPoints()
+            f:SetPoint("LEFT", frame, "RIGHT", x, 0)
+            x = x + TOOL + 4
+            f.icon:SetTexture(def.icon or "Interface\\Icons\\INV_Misc_QuestionMark")
+            if f.key == "evocation" then
+                UI:SpellCooldown(f.cd, def.id)
+            else
+                f.icon:SetDesaturated(Spells.ItemCount(Spells.MANA_GEMS) == 0)   -- grey: no gem in the bags
+            end
+        end
+    end
+end
+
 function Mana:Apply()
     if not frame then return end
     local db = NS.db.mana
     frame:SetSize(db.width, db.height)
     curve = buildCurve(db.lowPct)
     bar.spark:SetHeight(db.height)
+    self:Tools()
     self:Update()
 end

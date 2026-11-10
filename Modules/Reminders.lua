@@ -5,6 +5,8 @@
       * Frost: Ice Barrier not up (guides: keep it up at all times).
       * No mana gem in your bags (when you can conjure one).
       * Low on Runes of Teleportation / Portals (when you know those spells).
+      * Ready check: one card, "All set" or the consumables that are missing
+        (weapon oil, mana potions, conjured water).
       * Absorb icon: Ice Barrier or Mana Shield with time left, drawn by the
         client (native aura slot), also in combat.
     Buffs are secret in combat, so their state is the last readable answer,
@@ -27,6 +29,8 @@ local BUFFS = {
 }
 local state = {}        -- buff -> true / false / nil (unknown)
 R.state = state
+local ready, readyN = false, 0   -- a ready check runs; its number, so an old timer never ends a newer check
+local READY_ICON = "Interface\\Icons\\INV_Potion_76"
 
 local function knownAny(keys)
     for _, k in ipairs(keys) do if Spells:Known(k) then return Spells:Get(k) end end
@@ -51,12 +55,6 @@ local function readBuff(keys)
     return false
 end
 
-local function itemCount(ids)
-    local n = 0
-    for _, id in ipairs(ids) do n = n + (NS.Try(C_Item and C_Item.GetItemCount, id) or 0) end
-    return n
-end
-
 function R:Update()
     local db = NS.db.reminders
     local on = NS:IsEnabled("reminders")
@@ -78,7 +76,7 @@ function R:Update()
 
     -- mana gem: any rank in the bags
     local gemSpell = knownAny({ "conjureGem" })
-    R.gems = itemCount(Spells.MANA_GEMS)
+    R.gems = Spells.ItemCount(Spells.MANA_GEMS)
     if on and db.gem and gemSpell and not inCombat and R.gems == 0 and not quiet then
         A:Set("gem", { title = "No mana gem", text = "Conjure one before the pull", icon = gemSpell.icon, priority = 3 })
     else
@@ -94,6 +92,20 @@ function R:Update()
         A:Set("runes", { title = "Low on " .. low .. " runes", text = "Buy more at a reagent vendor", icon = "Interface\\Icons\\INV_Misc_Rune_06", priority = 1 })
     else
         A:Clear("runes")
+    end
+
+    -- ready check: what the cards above do not cover, or "All set" when nothing is missing at all
+    A:Clear("ready")
+    if on and db.ready and ready and not inCombat then
+        local miss = {}
+        if GetWeaponEnchantInfo and not GetWeaponEnchantInfo() then miss[#miss + 1] = "oil" end
+        if Spells.ItemCount(Spells.MANA_POTIONS) == 0 then miss[#miss + 1] = "potions" end
+        if Spells.ItemCount(Spells.WATER) == 0 then miss[#miss + 1] = "water" end
+        if #miss > 0 then
+            A:Set("ready", { title = "Ready check", text = "Missing: " .. table.concat(miss, ", "), icon = READY_ICON, priority = 9 })
+        elseif not (A.active.intellect or A.active.armor or A.active.barrier or A.active.gem) then
+            A:Set("ready", { title = "Ready check", text = "All set", icon = READY_ICON, color = UI.palette.good, priority = 9 })
+        end
     end
 end
 
@@ -173,6 +185,13 @@ function R:Init()
     NS:On("PLAYER_UNGHOST", update)
     NS:On("MF_SPELLS", function() self:Apply() end)
     NS:On("MF_SPEC", function() self:Apply() end)
+    NS:On("READY_CHECK", function()
+        ready, readyN = true, readyN + 1
+        local mine = readyN
+        update()
+        C_Timer.After(35, function() if readyN == mine then ready = false; update() end end)   -- if "finished" never arrives
+    end)
+    NS:On("READY_CHECK_FINISHED", function() ready, readyN = false, readyN + 1; update() end)
     NS:OnUnit("UNIT_SPELLCAST_SUCCEEDED", "player", function(_, _, _, spellID)
         local key = Spells:KeyFor(spellID)
         if not key then return end

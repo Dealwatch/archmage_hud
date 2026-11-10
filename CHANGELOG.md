@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.2.0
+The rotation, shown without more clutter, and a few things that make a mage's day easier. Nothing here decides for
+you: the marks and the opener are fixed lists, and the opener follows only your own casts.
+- Rotation marks under the stack bar: small icons that say what to cast at which stack (Arcane: Fire Blast at 1-2,
+  Arcane Wrath at 3-4, Arcane Power at 4; Fire: Pyroblast at 3; Frost: Cone of Cold at 5)
+- Arcane: Heating Up is a thin second bar under the Arcane Blast bar instead of a number on a proc icon
+- Opener: your spec's first casts as a small strip before the pull, ticked off as you cast, gone when it is through
+- `/mage legend` (also in Appearance): one sentence beside every HUD element for 10 seconds
+- Mana gem and Evocation as two small icons at the end of the mana bar, with their cooldowns; the gem is grey when
+  you have none. Evocation left the cooldown row
+- Ready check: one card, "All set" or the consumables that are missing (weapon oil, mana potions, conjured water)
+- Polymorph on your focus: a bar under the cooldown row with the time left (only while you have a focus)
+- Cooldown row in two tiers: your spec's cooldowns large, the shared ones small and dimmed
+- Presets in the overview: Minimal (stack bar, procs, cast bar), Standard, Full (the default: everything above)
+- Render check: settings pages are rendered scrolled to their end too, with the scroll area clipped as in game
+
 ## 0.1.0
 First test build for WoW Forever, as Archmage HUD (`/mage` or `/amh`). Built on the Shammy Forever framework (settings window, edit mode, alerts,
 native aura slots, probe).

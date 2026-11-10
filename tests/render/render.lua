@@ -172,11 +172,21 @@ local function rect(o)
     local b, t = solve(ys, oh)
     local res = { l = l or pr.l, r = r or (l and l + (o._w or 0)) or pr.r, b = b or pr.b, t = t or (b and b + (o._h or 0)) or pr.t,
         nopts = not o._pts or #o._pts == 0, oneX = #xs < 2 }
+    if o._scrollParent then   -- a scroll child moves up by the scroll offset
+        res.b, res.t = res.b + (o._scrollParent._scroll or 0), res.t + (o._scrollParent._scroll or 0)
+    end
     cache[o] = res
     return res
 end
 
 RECT = rect
+-- the scroll frame an object lives in clips it
+local function clipOf(o)
+    while o do
+        if o._scrollParent then return rect(o._scrollParent) end
+        o = o._parent
+    end
+end
 local function visible(o)
     local a = 1
     while o do
@@ -266,6 +276,11 @@ local function draw(o, list, idx)
         key[3] = 3.5
         html = string.format('<div style="position:absolute;left:%.1fpx;top:%.1fpx;width:%.1fpx;height:%.1fpx;background:%s;border-radius:2px"></div>',
             x + 1, y + 1, math.max(0, (w - 2) * frac), math.max(0, h - 2), css(o._sbc, alpha))
+    end
+    local c = html and clipOf(o)
+    if c then
+        if r.t <= c.b or r.b >= c.t then return end   -- scrolled out of view
+        html = html:gsub('style="', string.format('style="clip-path:inset(%.1fpx 0 %.1fpx 0);', math.max(0, r.t - c.t), math.max(0, c.b - r.b)), 1)
     end
     if html then list[#list + 1] = { key = key, html = html } end
 end

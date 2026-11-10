@@ -8,7 +8,7 @@ element can be moved, resized or switched off. The addon is in English.
 
 Same look and handling as *Shammy Forever* (settings window, edit mode, alerts).
 
-> Status: **0.1.0, first in-game test pending.** It is built against Blizzard's Forever UI code
+> Status: **0.2.0, first in-game test pending.** It is built against Blizzard's Forever UI code
 > and an offline test client. Nothing is confirmed in the real game yet.
 
 ## Install
@@ -31,21 +31,24 @@ The spec is detected from your talents (**Auto**) or set by hand: `/mage arcane`
 
 | Spec | How it is played on Forever | What the HUD shows |
 |---|---|---|
-| **Arcane** | Build Arcane Blast stacks (4, 18 s window). Clearcasting goes on Arcane Blast, Missile Barrage on Arcane Missiles, Arcane Wrath at 3-4 stacks (twice per window). Level 60 builds dip into Fire: Fire Blast on cooldown builds Heating Up, then Pyroblast at 4 stacks. Arcane Power / Presence of Mind at 4 stacks. | Stack bar: **Arcane Blast** (4) with the time left of the window. Procs: Missile Barrage, Clearcasting, Heating Up, Arcane Power, Presence of Mind. Cooldowns: Arcane Wrath, Fire Blast, Arcane Power, Presence of Mind |
+| **Arcane** | Build Arcane Blast stacks (4, 18 s window). Clearcasting goes on Arcane Blast, Missile Barrage on Arcane Missiles, Arcane Wrath at 3-4 stacks (twice per window). Level 60 builds dip into Fire: Fire Blast on cooldown builds Heating Up, then Pyroblast at 4 stacks. Arcane Power / Presence of Mind at 4 stacks. | Stack bar: **Arcane Blast** (4) with the time left of the window, and a thin second bar for **Heating Up** (3). Procs: Missile Barrage, Clearcasting, Arcane Power, Presence of Mind. Cooldowns: Arcane Wrath, Fire Blast, Arcane Power, Presence of Mind |
 | **Fire** | Scorch to 5 Improved Scorch stacks, Fire Blast on cooldown, crits build **Heating Up** (3 stacks, each -25% cast time on Pyroblast, a 6 s cast on Forever), then Pyroblast. Fireball filler. Fire Power rewards Fireball DoT, Improved Scorch, Ignite and Pyroblast DoT on the target. Combustion for burst. Frostfire variant: Frostfire Bolt filler, Ice Lance on Fingers of Frost. | Stack bar: **Heating Up** (3, "Pyroblast!"). Debuffs: Fire Vulnerability (stacks), Fireball, Ignite, Pyroblast, Frostfire Bolt. Procs: Combustion, Wake of Fire, Clearcasting, Missile Barrage, Fingers of Frost. Cooldowns: Fire Blast, Ice Lance, Combustion, Blast Wave |
 | **Frost** | Frostbolt filler. Ice Lance (x4 damage) on Fingers of Frost, Frostbite or after Frost Nova. Arcane Missiles on Missile Barrage. Winter's Chill build: Cone of Cold at 5 stacks. Keep Arcane Intellect and Ice Barrier up at all times. | Stack bar: **Winter's Chill** on the target (5, "Cone of Cold!"). Debuffs: Frost Nova and Frostbite (target frozen = Ice Lance window). Procs: Fingers of Frost (charges), Clearcasting, Missile Barrage, Presence of Mind. Cooldowns: Ice Lance, Ice Barrier, Cone of Cold, Cold Snap. Alert when Ice Barrier is not up |
 
-Every spec also gets Frost Nova, Blink, Counterspell, Ice Block and Evocation in the cooldown row. Only spells you
-know are shown. Fire Blast and Ice Lance share one 8 s cooldown on Forever.
+Every spec also gets Frost Nova, Blink, Counterspell and Ice Block as small icons beside the spec's cooldowns;
+Evocation and the mana gem sit at the end of the mana bar. Only spells you know are shown. Fire Blast and Ice Lance
+share one 8 s cooldown on Forever.
 
-Rotations follow the Warcraft Tavern Forever guides (Nov 2026); spells, cooldowns and durations were checked against
+Rotations follow the Warcraft Tavern Forever guides (Nov 2026), the openers also mmonster's rotation trainer; spells, cooldowns and durations were checked against
 Wowhead's Forever data. Not on Forever, so not tracked: Living Bomb, Icy Veins, Arcane Barrage, Brain Freeze, Molten Armor, Water Elemental and the SoD runes.
 
 ## Quick start
 
 1. `/mage` opens the settings window. The overview has the spec switch, the state of your buffs and stacks,
    and one switch per module.
-2. Nothing to arrange: the HUD lays itself out for your spec. `/mage edit` only if you want something elsewhere.
+2. Nothing to arrange: the HUD lays itself out for your spec. `/mage edit` only if you want something elsewhere,
+   `/mage legend` tells you what each element is for. Too much on screen? Pick the *Minimal* or *Standard* preset
+   in the overview.
 3. Fight something. The HUD shows in combat and while an enemy is targeted. Out of combat it is hidden;
    only alerts stay on screen.
 
@@ -56,6 +59,7 @@ Wowhead's Forever data. Not on Forever, so not tracked: Living Bomb, Icy Veins, 
 | `/mage` (or `/amh`) | Settings window |
 | `/mage arcane` / `fire` / `frost` / `auto` | Switch spec |
 | `/mage edit` | Optional edit mode: drag frames (saved per spec, snaps to the grid, Shift = free), arrow keys nudge, right-click = back to the auto layout |
+| `/mage legend` | What each HUD element is for: one sentence beside it, for 10 seconds |
 | `/mage test` | Preview the alerts for 8 seconds |
 | `/mage probe` | Shows what Forever lets the addon read right now. Run it once out of combat and once **in combat** |
 | `/mage spells` | Copyable list of your spellbook with spell IDs |
@@ -73,13 +77,22 @@ and closes up: rows a spec does not use, modules you switched off and spells you
         [Cb][WF][MB]                  Procs: only what is up right now (centred)
      Heating Up         Pyroblast!
 [Ab] [=======|=======|=======] 16.2   Stack bar + time left; absorb icon on the left
-     [==============          ]       Mana
+                         [Py]         Rotation marks: what to cast at which stack
+     [==============          ][G][E] Mana, with mana gem and Evocation at its end
      [Fireball======          2.1]    Cast bar (only while you cast)
      [F][============   24.3]         Your debuffs on the target: Fire 4 (5 with Frostfire), Frost 2, Arcane none
      [F][=====           4.4]
      ...
-     [FB][CB][BW][FN][BL][CS][EV]     Cooldowns: spec first, then the shared ones
+     [FB][CB][BW]  [fn][bl][cs]       Cooldowns: your spec's large, the shared ones small
+     [P][============   31.0]         Polymorph on your focus (only while you have one)
+        [Py][Fb][Sc][FB]              Opener: before the pull, ticked off as you cast
 ```
+
+Arcane also gets a thin second bar under the marks: Heating Up (3), because the Forever hybrid casts Pyroblast at
+3 Heating Up while 3-4 Arcane Blast stacks are up.
+
+**Presets** (overview): *Minimal* is the stack bar, procs and cast bar. *Standard* adds mana, debuffs, cooldowns and
+reminders. *Full* (the default) adds the rotation marks, the opener and the Polymorph timer.
 
 The stack bar (Arcane Blast, Heating Up, Winter's Chill) sits in the middle of your view because it drives every
 spec's next cast. Alerts stack at the top of the screen.
@@ -92,12 +105,13 @@ hand it back to the automatic layout. Appearance > **Auto layout** drops all mov
 | Module | What it shows | Settings |
 |---|---|---|
 | **Cast Bar** | Your casts and channels right under the mana bar, in a calm neutral colour: spell name, time left; channels drain; red for a moment when interrupted. Only while you cast, also out of combat (Teleport, conjures). Switches Blizzard's own cast bar off so there is only one (back on: /reload) | width, height, time left, hide Blizzard's cast bar |
-| **Mana Bar** | Thin mana bar, red when low, hidden at full mana out of combat | width, height, red below %, percentage text, hide at full |
+| **Mana Bar** | Thin mana bar, red when low, hidden at full mana out of combat. Mana gem (grey: none in the bags) and Evocation as two small icons at its end, with their cooldowns | width, height, red below %, percentage text, hide at full, gem and Evocation icons |
 | **Procs** | One centred row that shows only active procs and burst buffs of your spec, with a time-left swipe and stacks. A big card ("Pyroblast!", "Ice Lance!") while the client lights up one of your spells, with an optional sound | icon size, card on/off, sound |
-| **Stack Bar** | Segmented bar for your spec's stacks, gold at full with a glow, a sound and a hint | width, height, glow, sound, hide at zero |
-| **Target Debuffs** | Fire: Fire Vulnerability, Fireball, Ignite, Pyroblast, Frostfire Bolt (only in the Frostfire build, i.e. with Ice Lance). Frost: Frost Nova, Frostbite. One bar per debuff of yours on the target, with the real time left and stacks | width, height |
-| **Cooldowns** | Your spec's cooldowns plus the shared ones; the GCD is ignored. An icon glows while the client lights it up and flashes once when the cooldown your cast started is over | icon size, ready flash |
-| **Reminders** | Alerts: Arcane Intellect missing, no armor spell, Ice Barrier not up (Frost), no mana gem, low on Runes of Teleportation/Portals. Absorb icon for Ice Barrier / Mana Shield with time left; for Frost it turns red and pulses while Ice Barrier is not up (in combat, where buffs are secret) | each reminder on/off, also in combat, rune threshold, absorb icon and size, snooze time |
+| **Stack Bar** | Segmented bar for your spec's stacks, gold at full with a glow, a sound and a hint. Rotation marks under the segments: Arcane has Fire Blast at 1-2, Arcane Wrath at 3-4, Arcane Power at 4; Fire has Pyroblast at 3; Frost has Cone of Cold at 5. Arcane: thin second bar for Heating Up | width, height, glow, sound, hide at zero, rotation marks |
+| **Target Debuffs** | Fire: Fire Vulnerability, Fireball, Ignite, Pyroblast, Frostfire Bolt (only in the Frostfire build, i.e. with Ice Lance). Frost: Frost Nova, Frostbite. One bar per debuff of yours on the target, with the real time left and stacks. Polymorph on your focus: one more bar under the cooldown row | width, height, Polymorph on the focus |
+| **Cooldowns** | Your spec's cooldowns large, the shared ones small and dimmed beside them; the GCD is ignored. An icon glows while the client lights it up and flashes once when the cooldown your cast started is over | icon size, ready flash |
+| **Opener** | The first casts of a fight for your spec, as a small strip before the pull: each icon dims when you have cast it, the next one is framed, and it is gone when the opener is through (or 20 s into the fight). Arcane: Arcane Blast, Fire Blast, Arcane Blast, Arcane Wrath. Fire: Pyroblast, Fireball, Scorch, Fire Blast. Frost: Frostbolt, Frost Nova, Ice Lance, Frostbolt | on/off |
+| **Reminders** | Alerts: Arcane Intellect missing, no armor spell, Ice Barrier not up (Frost), no mana gem, low on Runes of Teleportation/Portals. At a ready check one more card: "All set", or the consumables that are missing (weapon oil, mana potions, conjured water). Absorb icon for Ice Barrier / Mana Shield with time left; for Frost it turns red and pulses while Ice Barrier is not up (in combat, where buffs are secret) | each reminder on/off, also in combat, rune threshold, ready check, absorb icon and size, snooze time |
 
 **Appearance:** accent colour (Mage, *Follow spec*, Arcane, Fire, Frost), font, text size (0.7 - 1.2x), bar texture, sounds,
 out-of-combat opacity (0% = hidden), show the HUD when an enemy is targeted, HUD scale, edit mode grid,
@@ -164,6 +178,9 @@ Plus every Classic rank of the other spells (see `Spells.lua`). `/mage spells` p
 - Mana: when the value is secret the client colours the bar through a colour curve (works in Farseer); "hide at
   full" needs readable mana, so with secret mana the bar stays visible.
 - The debuff lists (Fire Vulnerability is personal on Forever and filtered as yours; Frostbite/Frost Nova count as yours).
+- New in 0.2.0, all unconfirmed in game: the item IDs behind the ready check (mana potions, conjured water) and the
+  mana gem's cooldown (started by your own "Replenish Mana" cast) are the Classic ones; the Polymorph timer needs
+  the `focus` unit and its auras to work like the target's; the ready-check card needs the `READY_CHECK` events.
 - Whether the client reports passive talents as known (`/mage probe` line "talents known"): the Ignite, Fire Vulnerability
   and Frostbite rows appear only with the talent.
 
@@ -176,7 +193,7 @@ Spells.lua          spell table, what each spec watches, spellbook lookup, spec 
 UI/                 Theme (look, rounded textures), Movers (edit mode), Layout (automatic spec layout), Alerts,
                     Native (aura container),
                     Widgets and Options (settings window)
-Modules/            Mana, Castbar, Procs, Stacks, Debuffs, Cooldowns, Reminders
+Modules/            Mana, Castbar, Procs, Stacks, Debuffs, Cooldowns, Opener, Reminders
 Probe.lua           /mage probe and /mage spells
 Media/              rounded-corner textures (TGA)
 tests/run.lua       offline test client
@@ -186,11 +203,12 @@ tests/render/       renders the addon's frames to PNG and checks that no text or
 ## Development
 
 `lua5.1 tests/run.lua` loads the addon into a fake client, including secret values in combat and the native
-aura container. It drives login, every settings page, the spec switch, edit mode, the reminders, the stack bar,
-the mana bar, a combat sequence with the proc card, and the fade. Any Lua error fails the run.
+aura container. It drives login, every settings page, the spec switch, edit mode, the legend, the presets, the
+opener, the reminders and the ready check, the stack bar with its marks, the mana bar, a combat sequence with the
+proc card, and the fade. Any Lua error fails the run.
 
-`node tests/render/shot.js` renders what the addon really builds (HUD per spec in combat, alerts, edit mode,
-every settings page) from the offline client into `tests/render/out/*.png` (needs Playwright with Chromium and
+`node tests/render/shot.js` renders what the addon really builds (HUD per spec in combat, the opener before the
+pull, alerts, the ready check, edit mode, the legend, every settings page, also scrolled to its end) from the offline client into `tests/render/out/*.png` (needs Playwright with Chromium and
 network for the spell icons). It then checks every text (wider than its field, cut off, sticking out of its frame,
 on top of another text) and that no HUD frame covers another, and prints `text check: all good`. Look at the
 images after every change.

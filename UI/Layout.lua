@@ -6,8 +6,10 @@
     spells you do not know take no space, and the rest closes up.
 
     Top to bottom: proc card, proc row, stack bar (most important for every
-    spec, in the middle of your view), mana, cast bar, your debuffs on the
-    target, the cooldown row. The absorb icon sits left of the stack bar.
+    spec, in the middle of your view) with its rotation marks and, for Arcane,
+    the thin Heating Up bar, mana, cast bar, your debuffs on the target, the
+    cooldown row, the opener, the Polymorph timer of your focus. The absorb
+    icon sits left of the stack bar.
 
     A frame you drag in edit mode keeps that spot (saved per spec); a right-
     click in edit mode hands it back to this layout.
@@ -21,6 +23,9 @@ NS.Layout = Layout
 
 local GAP = 6
 local LABEL = 14     -- room for the stack bar's name / hint above it
+Layout.MARKS = 19    -- row of rotation marks under the stack bar: 5 gap (clear of the full-stacks glow) + 14 icon
+Layout.SECOND = 11   -- second stack bar: 5 gap + 6 bar
+Layout.OPENER = 22   -- opener icons
 
 -- Number of debuff rows the active spec shows (same rule as Modules/Debuffs).
 function Layout.DebuffRows()
@@ -30,6 +35,12 @@ function Layout.DebuffRows()
         if Spells:DebuffShown(key) then n = n + 1 end
     end
     return n
+end
+
+-- The Polymorph row is there: you know the spell and have a focus (or are arranging frames).
+function Layout.FocusRow()
+    return NS:IsEnabled("debuffs") and NS.db.debuffs.focus and Spells:DebuffShown("polymorph")
+        and (NS.editing or UnitExists("focus")) or false
 end
 
 -- { key = { point, relativePoint, x, y } } for the active spec, on UIParent.
@@ -48,6 +59,8 @@ function Layout.Column()
         out.stacks = { "TOP", "CENTER", 0, y }
         out.absorb = { "TOPRIGHT", "CENTER", left, y + 2 }
         y = y - db.stacks.height - GAP
+        if db.stacks.marks and Spells.SPEC_DATA[NS.spec].stacks.marks then y = y - Layout.MARKS end
+        if Spells.SPEC_DATA[NS.spec].second then y = y - Layout.SECOND end
     else
         out.stacks = { "TOP", "CENTER", 0, y - LABEL }
         out.absorb = { "TOPRIGHT", "CENTER", left, y }
@@ -64,6 +77,12 @@ function Layout.Column()
     if rows > 0 then y = y - rows * (db.debuffs.height + 2) + 2 - GAP end
 
     out.cooldowns = { "TOP", "CENTER", 0, y - 4 }
+    if NS:IsEnabled("cooldowns") then y = y - 4 - db.cooldowns.size - GAP end
+
+    out.focus = { "TOP", "CENTER", 0, y }     -- right under the cooldown row; takes space only while you have a focus
+    if Layout.FocusRow() then y = y - db.debuffs.height - GAP end
+
+    out.opener = { "TOP", "CENTER", 0, y }
     return out
 end
 
@@ -73,3 +92,4 @@ function Layout.For(key)
 end
 
 NS:On("MF_SPELLS", function() if NS.Movers then NS.Movers:RestoreAll() end end)
+NS:On("PLAYER_FOCUS_CHANGED", function() if NS.Movers then NS.Movers:RestoreAll() end end)   -- the opener moves below the Polymorph row

@@ -9,6 +9,23 @@
 local _, NS = ...
 local UI = NS.UI
 
+-- /mage legend: what each element is for, one sentence beside it for ten seconds. It reuses the
+-- edit-mode overlays (and their previews), without dragging, header or grid.
+local LEGEND_SECS = 10
+local TIPS = {
+    alerts = "Reminders: right-click one to snooze it",
+    proccard = "Shows while the client offers this spell",
+    procs = "Procs and burst buffs that are up right now",
+    stacks = function() return NS.Spells.SPEC_DATA[NS.spec].stacks.tip end,
+    mana = "Mana, red when low; gem and Evocation beside it",
+    castbar = "Your cast or channel",
+    debuffs = "Your debuffs on the target, with the time left",
+    cooldowns = "Rotation spells large, utility small",
+    opener = "Your opener: the framed icon is next",
+    focus = "Polymorph on your focus",
+    absorb = "Ice Barrier / Mana Shield; dim: not up",
+}
+
 local Movers = { list = {}, byKey = {} }
 NS.Movers = Movers
 
@@ -64,6 +81,13 @@ local function makeOverlay(entry)
     o.label = UI:Text(o, 11, UI.palette.text, "OUTLINE")
     o.label:SetPoint("CENTER")
     o.label:SetText(entry.label)
+    o.tip = UI:Text(o, 11, UI.palette.text, "OUTLINE")
+    if entry.key == "absorb" then   -- left of the column: its sentence goes further left
+        o.tip:SetPoint("RIGHT", o, "LEFT", -8, 0)
+        o.tip:SetJustifyH("RIGHT")
+    else
+        o.tip:SetPoint("LEFT", o, "RIGHT", entry.key == "mana" and 46 or 10, 0)   -- mana: past the gem and Evocation icons
+    end
     o:RegisterForClicks("AnyUp")
     o:SetScript("OnMouseDown", function(_, button)
         if button ~= "LeftButton" then return end
@@ -259,25 +283,42 @@ local function buildHeader()
     header:Hide()
 end
 
-function Movers:Toggle(on)
+function Movers:Toggle(on, legend)
     if on == nil then on = not self.active end
+    legend = on and legend or false
     if on and InCombatLockdown() then
         NS.Print("edit mode is not available in combat.")
         return
     end
     if not grid then buildGrid(); buildHeader() end
     self.active = on
+    self.legend = legend
     NS.editing = on
-    if on then self.showGrid = true end
+    if on then self.showGrid = not legend end
     for _, e in ipairs(self.list) do
         if not e.overlay then makeOverlay(e) end
-        e.overlay:SetShown(on)
-        if on then UI:SetBorderColor(e.overlay, 1, 1, 1, 0.6) end
+        local o = e.overlay
+        o:SetShown(on)
+        if on then
+            UI:SetBorderColor(o, 1, 1, 1, legend and 0.35 or 0.6)
+            -- legend: the element itself stays visible, with its sentence instead of its name
+            o.mfBg:SetAlpha(legend and 0 or 1)
+            o.label:SetShown(not legend)
+            o:EnableMouse(not legend)
+            local tip = TIPS[e.key]
+            if type(tip) == "function" then tip = tip() end
+            o.tip:SetText(legend and tip or "")
+        end
     end
-    header:SetShown(on)
-    grid:SetShown(on)
+    header:SetShown(on and not legend)
+    grid:SetShown(on and not legend)
     if on then self:DrawGrid() end
     NS:ApplyAll()   -- modules show their frames (with preview data) while editing
+    if legend then
+        local n = (self.legendN or 0) + 1   -- a legend opened again keeps its own ten seconds
+        self.legendN = n
+        C_Timer.After(LEGEND_SECS, function() if Movers.legend and Movers.legendN == n then Movers:Toggle(false) end end)
+    end
 end
 
 NS:On("PLAYER_REGEN_DISABLED", function()

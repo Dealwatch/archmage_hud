@@ -180,12 +180,17 @@ local function tilesBlock(parent)
 end
 
 local function specBlock(parent)
-    local c = W.Card(parent, "Spec", "Interface\\Icons\\INV_Misc_Book_09")
+    local c = W.Card(parent, "Spec and preset", "Interface\\Icons\\INV_Misc_Book_09")
     local opts = { { value = "auto", label = "Auto" } }
     for _, sp in ipairs(NS.SPECS) do opts[#opts + 1] = { value = sp.key, label = sp.label } end
     c:Add(W.Segment(c, "Active spec", "Auto follows your talents. Also: /mage arcane, /mage fire, /mage frost, /mage auto.", opts,
         function() return NS.db.spec end,
         function(v) NS:SetSpec(v); Options:Restyle() end))
+    local presets = {}
+    for _, p in ipairs(NS.PRESETS) do presets[#presets + 1] = { value = p.key, label = p.label } end
+    c:Add(W.Segment(c, "Preset", "How much HUD. Minimal: stack bar, procs and cast bar. Full adds rotation marks, opener and Polymorph timer.", presets,
+        function() return NS:Preset() end,
+        function(v) NS:SetPreset(v); if current then current:Refresh() end end))
     return c
 end
 
@@ -255,6 +260,7 @@ local function buildPages()
         c:Add(W.Slider(c, "Red below", nil, 5, 60, 5, function(v) return v .. "%" end, bind("mana", "lowPct")))
         c:Add(W.Toggle(c, "Show percentage", "Needs a height of 9 or more.", bind("mana", "showText")))
         c:Add(W.Toggle(c, "Hide at full mana out of combat", nil, bind("mana", "hideFull")))
+        c:Add(W.Toggle(c, "Mana gem and Evocation", "Two small icons at the end of the bar, with their cooldowns. The gem is grey when you have none.", bind("mana", "tools")))
     end
 
     p = newPage("castbar", "Cast Bar", "Your casts and channels, right under the mana bar. Shown only while you cast.", "Interface\\Icons\\Spell_Fire_FlameBolt")
@@ -293,6 +299,7 @@ local function buildPages()
         c:Add(W.Toggle(c, "Glow at full stacks", nil, bind("stacks", "glow")))
         c:Add(W.Toggle(c, "Sound at full stacks", nil, bind("stacks", "sound")))
         c:Add(W.Toggle(c, "Hide at zero stacks out of combat", nil, bind("stacks", "hideEmpty")))
+        c:Add(W.Toggle(c, "Rotation marks", "Small icons under the segments: what to cast at which stack.", bind("stacks", "marks")))
         local info = c:Add(W.ButtonRow(c, "Detection", "The client fills the bar itself (native aura slot), also in combat. Glow and sound need the aura to be readable.", "Run probe", function() NS.commands.probe() end))
         local base = info.Refresh
         function info:Refresh()
@@ -308,6 +315,7 @@ local function buildPages()
         local c = self:Add(W.Card(parent, "Target debuffs", self.icon, bindModule("debuffs")))
         c:Add(W.Slider(c, "Width", nil, 120, 360, 10, px, bind("debuffs", "width")))
         c:Add(W.Slider(c, "Height", nil, 8, 30, 1, px, bind("debuffs", "height")))
+        c:Add(W.Toggle(c, "Polymorph on your focus", "A bar under the HUD with the time left of your Polymorph on the focus target.", bind("debuffs", "focus")))
         local info = c:Add(W.ButtonRow(c, "Tracked", "", "Edit layout", function() NS.Movers:Toggle(true) end))
         local base = info.Refresh
         function info:Refresh()
@@ -338,6 +346,7 @@ local function buildPages()
         c:Add(W.Toggle(c, "No mana gem", "Out of combat, when you can conjure one.", bind("reminders", "gem")))
         c:Add(W.Toggle(c, "Low on teleport / portal runes", nil, bind("reminders", "reagents")))
         c:Add(W.Slider(c, "Warn below", nil, 1, 20, 1, function(v) return v .. " runes" end, bind("reminders", "reagentMin")))
+        c:Add(W.Toggle(c, "Ready check", "One card at a ready check: all set, or what is missing (weapon oil, mana potions, water).", bind("reminders", "ready")))
         c:Add(W.Toggle(c, "Absorb icon", "Ice Barrier or Mana Shield with time left, straight from the client, also in combat.", bind("reminders", "absorbIcon")))
         c:Add(W.Slider(c, "Absorb icon size", nil, 20, 60, 1, px, bind("reminders", "absorbSize")))
         c:Add(W.Slider(c, "Snooze on right-click", nil, 15, 600, 15, secs, bind("reminders", "snooze")))
@@ -365,6 +374,7 @@ local function buildPages()
         layout:Add(W.Slider(layout, "HUD scale", nil, 0.5, 2.0, 0.05, mult, bindAppearance("scale")))
         layout:Add(W.Slider(layout, "Edit mode grid", nil, 0, 64, 4, px, bind("appearance", "grid")))
         layout:Add(W.ButtonRow(layout, "Frames", nil, "Open Edit Mode", function() NS.Movers:Toggle(true) end))
+        layout:Add(W.ButtonRow(layout, "Legend", "What each HUD element is for, written beside it for 10 seconds. Also: /mage legend.", "Show legend", function() NS.commands.legend() end))
         layout:Add(W.ButtonRow(layout, "Positions", "The HUD lays itself out for each spec. This drops every frame you moved (all specs) and goes back to the automatic layout.", "Auto layout", function()
             wipe(NS.db.positions); NS.Movers:RestoreAll()
         end))

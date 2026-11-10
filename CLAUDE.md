@@ -25,4 +25,8 @@ WoW Forever addon (interface 16001, Lua 5.1). English UI; the owner talks German
   `StatusBar:SetTimerDuration` takes a secret duration only from Blizzard code: try it in `pcall`, keep a fallback.
 - Text scales with Appearance > Text size (0.7 - 1.2x) inside frames of a fixed size: give a text field room for
   1.2x, or size the frame from `GetStringWidth()` (proc card, edit-mode overlays).
+- A native slot's `onBuilt` runs the module's `Apply` while `Init` is still building: create every frame `Apply`
+  touches before the first slot is built.
+- New HUD element: register it with `Movers:Register`, give it a row in `Layout.Column`, a sentence in `TIPS`
+  (UI/Movers.lua, for `/mage legend`) and a scene in `tests/render/scene.lua`.
 - Native aura slots: retry with `later()` when auras are secret out of combat, never `AfterCombat` alone.

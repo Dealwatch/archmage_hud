@@ -331,7 +331,8 @@ run("login", function()
     assert(NS.Spells:Get("frostfireBolt").known and NS.Spells:Get("frostfireBolt").id == 90002, "resolved by name from spellbook")
     assert(not NS.Spells:Get("iceBarrier").known, "unknown spell stays unknown")
     assert(NS.spec == "fire", "auto spec from talent spells: " .. tostring(NS.spec))
-    for _, key in ipairs({ "stacks_fire", "stacks_frost", "procs_fire", "debuff_frostfireBolt", "debuff_fireVuln", "stacks_arcane", "absorb" }) do
+    for _, key in ipairs({ "stacks_fire", "stacks_frost", "procs_fire", "debuff_frostfireBolt", "debuff_fireVuln", "stacks_arcane", "absorb",
+        "stacks2_arcane", "debuff_polymorph" }) do
         assert(NS.Native.slots[key] and NS.Native.slots[key]:Active(), "native slot " .. key)
     end
     assert(NS.Native.slots.stacks_fire.container._ids[400625], "heating up buff id in filter")
@@ -533,6 +534,106 @@ run("edit mode", function()
     assert(not _G.ArchmageHUDProcCard:IsShown(), "proc card hidden again")
 end)
 
+run("rotation marks, second bar, cooldown tiers, mana tools", function()
+    NS:SetSpec("arcane")
+    local St = NS.modules.stacks
+    assert(St.marks[1]:IsShown(), "Fire Blast mark under the Arcane Blast bar")
+    assert(not St.marks[2]:IsShown(), "no mark for a spell you do not know (Arcane Wrath)")
+    for _, k in ipairs(NS.Spells.SPEC_DATA.arcane.procs) do assert(k ~= "heatingUp", "Heating Up is the second bar, not a proc icon") end
+    local with = NS.Layout.Column().mana[4]
+    NS.db.stacks.marks = false
+    NS:ApplyAll()
+    assert(not St.marks[1]:IsShown() and NS.Layout.Column().mana[4] > with, "marks off: the row closes up")
+    NS.db.stacks.marks = true
+    NS:SetSpec("auto")
+    assert(NS.Layout.Column().opener[4] < NS.Layout.Column().cooldowns[4], "opener under the cooldown row")
+    -- cooldown row: rotation spells large, utility small; Evocation sits at the mana bar instead
+    local size = {}
+    for _, f in ipairs(allFrames) do if f.cd and f.key and f._parent == _G.ArchmageHUDCooldowns and f._shown then size[f.key] = f:GetWidth() end end
+    assert(size.fireBlast == 30 and size.blink == 21, "two tiers: " .. tostring(size.fireBlast) .. "/" .. tostring(size.blink))
+    assert(size.evocation == nil, "Evocation not in the row while it sits at the mana bar")
+    local tools = NS.modules.mana.tools
+    assert(tools[1]:IsShown() and tools[2]:IsShown(), "gem and Evocation at the mana bar")
+    local cd
+    tools[1].cd.SetCooldown = function(_, _, dur) cd = dur end
+    SPELLS[5405] = "Replenish Mana"
+    fire("UNIT_SPELLCAST_SUCCEEDED", "player", "guid", 5405)
+    assert(cd == 120, "using a gem starts its cooldown from your own cast")
+    NS.db.mana.tools = false
+    NS:ApplyAll()
+    assert(not tools[1]:IsShown(), "tools off")
+    for _, f in ipairs(allFrames) do if f.cd and f.key == "evocation" and f._parent == _G.ArchmageHUDCooldowns then assert(f._shown, "Evocation back in the row") end end
+    NS.db.mana.tools = true
+    NS:ApplyAll()
+end)
+
+run("opener", function()
+    local f, st = _G.ArchmageHUDOpener, NS.modules.opener.state
+    assert(f:IsShown() and st.step == 1, "opener shown before the pull")
+    fire("UNIT_SPELLCAST_SUCCEEDED", "player", "guid", 2136)    -- Fire Blast: not the next one
+    assert(st.step == 1, "only the next spell of the opener ticks")
+    for _, id in ipairs({ 11366, 133, 2948 }) do fire("UNIT_SPELLCAST_SUCCEEDED", "player", "guid", id) end
+    assert(st.step == 4 and f:IsShown(), "three of four cast")
+    fire("UNIT_SPELLCAST_SUCCEEDED", "player", "guid", 2136)
+    assert(not f:IsShown(), "gone when the opener is through")
+    fire("PLAYER_TARGET_CHANGED")
+    assert(f:IsShown() and st.step == 1, "a new target out of combat starts it again")
+    NS:SetModuleEnabled("opener", false)
+    assert(not f:IsShown(), "module off")
+    NS:SetModuleEnabled("opener", true)
+end)
+
+run("polymorph on the focus", function()
+    local f = _G.ArchmageHUDFocus
+    assert(not f:IsShown(), "no row without the spell")
+    SPELLS[118] = "Polymorph"
+    BOOK[#BOOK + 1] = 118
+    fire("SPELLS_CHANGED")
+    assert(f:IsShown(), "row once Polymorph is known")
+    local exists = UnitExists
+    UnitExists = function(unit) return unit ~= "focus" end
+    fire("PLAYER_FOCUS_CHANGED")
+    local opener = NS.Layout.Column().opener[4]
+    assert(not f:IsShown(), "no focus: no row")
+    UnitExists = exists
+    fire("PLAYER_FOCUS_CHANGED")
+    assert(f:IsShown() and NS.Layout.Column().opener[4] < opener, "with a focus the row is back and the opener sits below it")
+    NS.db.debuffs.focus = false
+    NS:ApplyAll()
+    assert(not f:IsShown(), "setting off")
+    NS.db.debuffs.focus = true
+    BOOK[#BOOK] = nil
+    fire("SPELLS_CHANGED")
+end)
+
+run("presets", function()
+    assert(NS:Preset() == "full", "the defaults are the full preset: " .. tostring(NS:Preset()))
+    NS:SetPreset("minimal")
+    assert(NS:Preset() == "minimal" and not NS.db.modules.mana and NS.db.modules.stacks, "minimal")
+    assert(not _G.ArchmageHUDOpener:IsShown() and not _G.ArchmageHUDCooldowns:IsShown(), "minimal hides the rest")
+    NS.db.modules.mana = true
+    assert(NS:Preset() == nil, "changed by hand: no preset")
+    NS:SetPreset("standard")
+    assert(NS.db.modules.cooldowns and not NS.db.modules.opener and not NS.db.stacks.marks, "standard")
+    NS:SetPreset("full")
+    assert(NS:Preset() == "full" and NS.db.modules.opener and NS.db.stacks.marks and NS.db.debuffs.focus, "full")
+end)
+
+run("legend", function()
+    SlashCmdList.ARCHMAGEHUD("legend")
+    local o = NS.Movers.byKey.stacks.overlay
+    assert(NS.editing and NS.Movers.legend, "legend on")
+    assert(o.tip:GetText() == NS.Spells.SPEC_DATA.fire.stacks.tip and not o.label:IsShown(), "the sentence instead of the name")
+end)   -- run() fires the timers: the legend ends by itself
+
+run("legend ends by itself, edit mode shows names again", function()
+    assert(not NS.editing and not NS.Movers.legend, "legend over")
+    SlashCmdList.ARCHMAGEHUD("edit")
+    local o = NS.Movers.byKey.stacks.overlay
+    assert(o.label:IsShown() and o.tip:GetText() == "", "edit mode: names, no sentences")
+    NS.Movers:Toggle(false)
+end)
+
 run("out of combat reminders", function()
     fire("UNIT_AURA", "player", {})
     assert(NS.Alerts.active.intellect, "missing arcane intellect")
@@ -552,6 +653,24 @@ run("out of combat reminders", function()
     SlashCmdList.ARCHMAGEHUD("probe")
     SlashCmdList.ARCHMAGEHUD("spells")
     SlashCmdList.ARCHMAGEHUD("test")
+end)
+
+run("ready check", function()
+    GetWeaponEnchantInfo = function() return false end
+    fire("READY_CHECK")
+    local a = NS.Alerts.active.ready
+    assert(a and a.text == "Missing: oil, potions, water", "what is missing: " .. tostring(a and a.text))
+    GetWeaponEnchantInfo = function() return true end
+    bag[13444], bag[8079] = 5, 20
+    fire("BAG_UPDATE_DELAYED")
+    assert(NS.Alerts.active.ready.text == "All set", "all set")
+    fire("READY_CHECK_FINISHED")
+    assert(not NS.Alerts.active.ready, "gone when the check is over")
+    NS.db.reminders.ready = false
+    fire("READY_CHECK")
+    assert(not NS.Alerts.active.ready, "setting off")
+    NS.db.reminders.ready = true
+    fire("READY_CHECK_FINISHED")
 end)
 
 run("stacks out of combat", function()

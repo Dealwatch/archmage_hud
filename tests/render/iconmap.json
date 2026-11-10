@@ -1,6 +1,7 @@
 {
  "10": "spell_frost_icestorm",
  "116": "spell_frost_frostbolt02",
+ "118": "spell_nature_polymorph",
  "120": "spell_frost_glacier",
  "122": "spell_frost_frostnova",
  "133": "spell_fire_flamebolt",
@@ -25,6 +26,7 @@
  "7302": "spell_frost_frostarmor02",
  "10059": "spell_arcane_portalstormwind",
  "11113": "spell_holy_excorcism_02",
+ "11119": "spell_fire_incinerate",
  "11129": "spell_fire_sealoffire",
  "11366": "spell_fire_fireball02",
  "11416": "spell_arcane_portalironforge",

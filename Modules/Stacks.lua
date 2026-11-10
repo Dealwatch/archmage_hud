@@ -12,7 +12,7 @@
 ]]
 
 local _, NS = ...
-local UI, Spells = NS.UI, NS.Spells
+local UI, Spells, Layout = NS.UI, NS.Spells, NS.Layout
 
 local St = NS:NewModule("stacks", {
     title = "Stack Bar",
@@ -30,6 +30,10 @@ St.state = state
 local frame
 local pips = {}
 local hosts = {}      -- spec -> { frame, native, bar }
+local marks = {}      -- rotation marks under the segments: static icons, what to cast at which stack
+local seconds = {}    -- spec -> { frame, native, lines }: the second, thin stack bar
+local SECOND_H = Layout.SECOND - 5
+local SECOND_COLOR = { 1, 0.49, 0.18 }   -- Heating Up: fire
 
 local function def(spec)
     local d = Spells.SPEC_DATA[spec or NS.spec]
@@ -91,6 +95,42 @@ local function buildHost(spec, s)
     h.native:Build()
 end
 
+-- A second, thin bar under the first (Arcane hybrid: Heating Up next to the Arcane Blast stacks).
+-- Native only: without the client's aura slot there is nothing to fill it from.
+local function buildSecond(spec, s)
+    local host = CreateFrame("Frame", nil, frame)
+    host:Hide()
+    UI:NativeHost(host)
+    local bg = host:CreateTexture(nil, "BACKGROUND")
+    bg:SetAllPoints()
+    bg:SetTexture(UI.WHITE)
+    bg:SetVertexColor(UI.palette.track[1], UI.palette.track[2], UI.palette.track[3], UI.palette.track[4])
+    local div = CreateFrame("Frame", nil, host)   -- dividers above the bar the client fills
+    div:SetAllPoints()
+    div:SetFrameLevel(host:GetFrameLevel() + 10)
+    local h = { frame = host, lines = {} }
+    for i = 1, s.max - 1 do
+        h.lines[i] = div:CreateTexture(nil, "OVERLAY")
+        h.lines[i]:SetTexture(UI.WHITE)
+        h.lines[i]:SetVertexColor(UI.palette.track[1], UI.palette.track[2], UI.palette.track[3], 1)
+    end
+    h.native = NS.Native:Slot({
+        key = "stacks2_" .. spec, parent = host, unit = s.unit, filter = s.filter, level = 3,
+        ids = function() return Spells:AuraIDs(s.key) end,
+        init = function(b)
+            b:SetSize(NS.db.stacks.width, SECOND_H)
+            local bar = CreateFrame("StatusBar", nil, b)
+            bar:SetAllPoints()
+            bar:SetStatusBarTexture(UI.WHITE)
+            bar:SetStatusBarColor(SECOND_COLOR[1], SECOND_COLOR[2], SECOND_COLOR[3])
+            b:SetApplicationBar(bar, { minApplications = 0, maxApplications = s.max })
+        end,
+        onBuilt = function() St:Apply() end,
+    })
+    seconds[spec] = h
+    h.native:Build()
+end
+
 function St:Init()
     frame = CreateFrame("Frame", "ArchmageHUDStacks", UIParent)
     frame:Hide()
@@ -133,9 +173,18 @@ function St:Init()
     self.hint:Hide()
     NS.Movers:Register(frame, "stacks", "Stacks", NS.Layout.For("stacks"))
 
+    for i = 1, 3 do
+        marks[i] = UI:Icon(frame, Layout.MARKS - 5)
+        marks[i]:SetAlpha(0.9)
+        marks[i]:Hide()
+    end
+    self.marks = marks
+
     for _, sp in ipairs(NS.SPECS) do
         local s = def(sp.key)
         if s then buildHost(sp.key, s) end
+        local s2 = Spells.SPEC_DATA[sp.key].second
+        if s2 then buildSecond(sp.key, s2) end
     end
 
     local function update() self:Update() end
@@ -174,6 +223,7 @@ function St:Draw()
         or (stacks or 0) > 0) or false
     UI:SafeShow(frame, show)
     for spec, h in pairs(hosts) do UI:SafeShow(h.frame, show and spec == NS.spec and not NS.editing) end
+    for spec, h in pairs(seconds) do UI:SafeShow(h.frame, show and spec == NS.spec) end
     if not show then return end
 
     local h = hosts[NS.spec]
@@ -225,6 +275,34 @@ function St:Apply()
     for spec, hs in pairs(hosts) do
         local sd = def(spec)
         hs.native:Restyle(function(b) b:SetSize(geometry(sd.max)) end)
+    end
+    -- rotation marks: the first spell of each mark that you know, under its segment
+    local row = NS.db.stacks.marks and s and s.marks
+    for i, m in ipairs(marks) do
+        local mark, d = row and row[i], nil
+        for j = 2, mark and #mark or 0 do
+            local c = Spells:Get(mark[j])
+            if not d and c and (c.known or NS.editing) then d = c end
+        end
+        m:SetShown(d ~= nil)
+        if d then
+            m.icon:SetTexture(d.icon)
+            m:ClearAllPoints()
+            m:SetPoint("TOP", frame, "BOTTOMLEFT", mark[1] * (pipW + GAP) - GAP / 2, -5)
+        end
+    end
+    for spec, h2 in pairs(seconds) do
+        local s2 = Spells.SPEC_DATA[spec].second
+        local segW = (w - GAP * (s2.max - 1)) / s2.max
+        h2.frame:ClearAllPoints()
+        h2.frame:SetPoint("TOPLEFT", frame, "BOTTOMLEFT", 0, -((row and Layout.MARKS or 0) + 5))
+        h2.frame:SetSize(w, SECOND_H)
+        for i, t in ipairs(h2.lines) do
+            t:ClearAllPoints()
+            t:SetPoint("TOP", h2.frame, "TOPLEFT", i * (segW + GAP) - GAP / 2, 0)
+            t:SetSize(GAP, SECOND_H)
+        end
+        h2.native:Restyle(function(b) b:SetSize(w, SECOND_H) end)
     end
     self:Update()
 end

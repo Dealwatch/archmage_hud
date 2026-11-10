@@ -1,10 +1,9 @@
 --[[
     ArchmageHUD - cooldown row
-    One row of icons for the cooldowns of your spec plus the ones every mage
-    uses (Spells:CooldownsFor). Only spells you know are shown.
-    GetSpellCooldownDuration returns a duration object the cooldown swirl
-    takes even when the numbers are secret. An icon glows while the client
-    lights up that spell (spell activation overlay, never secret).
+    One row of icons in two tiers: the cooldowns of your spec large, the ones
+    every mage uses (Spells:CooldownsFor) small and dimmed beside them. Only
+    spells you know are shown. An icon glows while the client lights up that
+    spell (spell activation overlay, never secret).
 ]]
 
 local _, NS = ...
@@ -37,35 +36,30 @@ local function icon(key)
     return f
 end
 
-local function setCooldown(f, def)
-    if C_Spell.GetSpellCooldownDuration then
-        local ok, d = pcall(C_Spell.GetSpellCooldownDuration, def.id, true)   -- true: ignore the GCD
-        if ok and d and pcall(f.cd.SetCooldownFromDurationObject, f.cd, d, true) then return end
-    end
-    local ok, info = pcall(C_Spell.GetSpellCooldown, def.id)
-    if ok and info then
-        local start, dur = NS.Readable(info.startTime), NS.Readable(info.duration)
-        if start and dur and dur > 1.5 then f.cd:SetCooldown(start, dur) else f.cd:Clear() end   -- 1.5: skip the GCD
-    end
-end
-
 function Cd:Update()
     if not row then return end
     local size = NS.db.cooldowns.size
     local want = {}
     local x = 0
+    local rotation, utility = {}, false
+    for _, key in ipairs(Spells.SPEC_DATA[NS.spec].cooldowns) do rotation[key] = true end
+    local small = math.floor(size * 0.7 + 0.5)
+    local atMana = NS:IsEnabled("mana") and NS.db.mana.tools   -- Evocation sits at the mana bar then
     for _, key in ipairs(Spells:CooldownsFor(NS.spec)) do
         local def = Spells:Get(key)
-        if def and (def.known or (NS.editing and x == 0)) then
+        if def and (def.known or (NS.editing and x == 0)) and not (key == "evocation" and atMana) then
             want[key] = true
             local f = icon(key)
+            local s = rotation[key] and size or small
+            if not rotation[key] and not utility then utility = true; if x > 0 then x = x + 6 end end   -- a little air between the tiers
             f:Show()
-            f:SetSize(size, size)
+            f:SetSize(s, s)
+            f:SetAlpha(rotation[key] and 1 or 0.75)
             f:ClearAllPoints()
             f:SetPoint("LEFT", row, "LEFT", x, 0)
-            x = x + size + 4
+            x = x + s + 4
             f.icon:SetTexture(def.icon or "Interface\\Icons\\INV_Misc_QuestionMark")
-            setCooldown(f, def)
+            UI:SpellCooldown(f.cd, def.id)
             local usable = true
             if C_Spell.IsSpellUsable then
                 local ok, u = pcall(C_Spell.IsSpellUsable, def.id)
