@@ -170,7 +170,7 @@ NS.defaults = {
         hideBlizzard = true,    -- switch off Blizzard's own player cast bar while ours is on
     },
     procs = {
-        size = 30,              -- icon size (applies after /reload: the client lays the row out)
+        size = 30,              -- icon size
         card = true,            -- big card when the client lights up a spell (instant Pyroblast, ...)
         sound = true,
     },

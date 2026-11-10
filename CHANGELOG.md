@@ -41,6 +41,13 @@ native aura slots, probe).
   kept the stack bar hidden), no endless retry when auras are secret out of combat (battlegrounds,
   encounters), unreadable buffs out of combat never warn, aura frames are only moved/resized out of
   combat, the proc card shows the newest lit spell, talent rows also appear once their debuff was seen
+- Text and overlap check (renders with a font as wide as the game's, checked by a script): text size goes up to
+  1.2x (above that, text ran over in alerts, the proc card and the settings window; use HUD scale for more);
+  the proc card is as wide as its spell name; the stack bar's name gives way to the gold hint when both do not
+  fit; edit-mode overlays are darker and at least as large as their name, the edit-mode header has room for two
+  lines; overview tiles and module cards fit their longest text; slider values ("20 runes", "10m 00s") no longer
+  touch the slider; the absorb icon sits left of the widest bar; debuff icons follow the height setting without
+  a /reload; a spell pressed during a channel (Arcane Missiles) no longer shows "Failed" on the cast bar
 - Reminders: Arcane Intellect, armor, Ice Barrier (Frost), mana gem, teleport/portal runes; absorb icon for Ice Barrier / Mana Shield
 - Forever spell IDs: Arcane Blast, Arcane Wrath, Missile Barrage, Heating Up, Fingers of Frost, Ice Lance,
   Frostfire Bolt, Ignite, Wake of Fire, Teleport: Dalaran

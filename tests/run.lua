@@ -89,6 +89,7 @@ end
 function Object:GetValue() return self._val end
 function Object:SetText(t) self._text = t end
 function Object:GetText() return self._text end
+function Object:GetStringWidth() return #tostring(self._text or "") * 6 end
 function Object:SetFont() return true end
 function Object:GetVerticalScroll() return self._scroll end
 function Object:SetVerticalScroll(v) self._scroll = v end
@@ -477,6 +478,8 @@ run("cast bar", function()
     assert(Cb.state.mode == "readable", "readable fill")
     local lo, hi = bar:GetMinMaxValues()
     assert(math.abs((bar:GetValue() - lo) / (hi - lo) - 0.6) < 0.01, "channel drains")
+    fire("UNIT_SPELLCAST_FAILED", "player", "guid9", 2136)   -- Fire Blast pressed mid-channel: the channel goes on
+    assert(Cb.state.active and bar.name:GetText() == "Arcane Missiles", "a spell pressed while channeling is no failed channel")
     channeling = nil
     fire("UNIT_SPELLCAST_CHANNEL_STOP", "player", "guid3", 5143)
     tick(0.5)

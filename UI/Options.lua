@@ -94,7 +94,7 @@ local function heroBlock(parent)
     h.title:SetPoint("TOPLEFT", h.logo, "TOPRIGHT", 18, -2)
     h.ver = UI:Text(h, 13, P.textDim)
     h.ver:SetPoint("BOTTOMLEFT", h.title, "BOTTOMRIGHT", 10, 3)
-    h.line1 = UI:Text(h, 13)
+    h.line1 = UI:Text(h, 12)
     h.line1:SetPoint("TOPLEFT", h.title, "BOTTOMLEFT", 0, -8)
     h.line2 = UI:Text(h, 12, P.textDim)
     h.line2:SetPoint("TOPLEFT", h.line1, "BOTTOMLEFT", 0, -6)
@@ -132,14 +132,14 @@ local function tilesBlock(parent)
         { label = "SPEC", icon = "Interface\\Icons\\Spell_Holy_MagicalSentry", value = function()
             return NS:SpecInfo().label .. (NS.specAuto and " (auto)" or "")
         end, iconFn = function() return NS:SpecInfo().icon end },
-        { label = "INTELLECT / ARMOR", icon = "Interface\\Icons\\Spell_Frost_FrostArmor02", value = function()
+        { label = "INT / ARMOR", icon = "Interface\\Icons\\Spell_Frost_FrostArmor02", value = function()
             return buffText("intellect") .. " / " .. buffText("armor")
         end },
         { label = "STACKS", icon = "Interface\\Icons\\Spell_Arcane_Blast", value = function()
             local st = NS.modules.stacks.state
             local h = NS.Native.slots["stacks_" .. tostring(NS.spec)]
             if h and h:Active() then return "native stack bar" end
-            if st.source == "aura" then return st.readableInCombat and "exact stacks" or "exact (out of combat)" end
+            if st.source == "aura" then return st.readableInCombat and "exact stacks" or "exact when idle" end
             return "not seen yet"
         end },
     }
@@ -152,18 +152,20 @@ local function tilesBlock(parent)
         f.label = UI:Text(f, 11, P.textDim)
         f.label:SetPoint("TOPLEFT", f.iconFrame, "TOPRIGHT", 12, -2)
         f.label:SetText(d.label)
-        f.value = UI:Text(f, 15)
+        f.value = UI:Text(f, 13)
         f.value:SetPoint("BOTTOMLEFT", f.iconFrame, "BOTTOMRIGHT", 12, 2)
         f.def = d
         t.tiles[i] = f
     end
     function t:Layout(width)
-        local w = (width - 2 * 14) / 3
+        local x = 0
         for i, f in ipairs(self.tiles) do
+            local w = (width - 2 * 14) * ({ 0.305, 0.355, 0.34 })[i]   -- by their longest value ("missing / missing")
             f:SetSize(w, 70)
             f.value:SetWidth(w - (14 + 40 + 12) - 8)   -- width, not a RIGHT anchor
             f:ClearAllPoints()
-            f:SetPoint("TOPLEFT", (i - 1) * (w + 14), 0)
+            f:SetPoint("TOPLEFT", x, 0)
+            x = x + w + 14
         end
         self:SetSize(width, 70)
         return 70
@@ -268,7 +270,7 @@ local function buildPages()
     p.build = function(self, parent)
         local c = self:Add(W.Card(parent, "Procs", self.icon, bindModule("procs")))
         c:Add(W.Slider(c, "Icon size", nil, 20, 48, 1, px, bind("procs", "size")))
-        c:Add(W.Toggle(c, "Proc card", "\"Pyroblast!\" while the client lights up a spell (Hot Streak, Brain Freeze, ...).", bind("procs", "card")))
+        c:Add(W.Toggle(c, "Proc card", "\"Pyroblast!\" while the client lights up a spell (Heating Up, Missile Barrage, ...).", bind("procs", "card")))
         c:Add(W.Toggle(c, "Sound with the card", nil, bind("procs", "sound")))
         local info = c:Add(W.ButtonRow(c, "Tracked", "", "Test alerts", function() NS.Alerts:Test() end))
         local base = info.Refresh
@@ -352,7 +354,8 @@ local function buildPages()
         for _, t in ipairs(UI.TEXTURES) do textures[#textures + 1] = { value = t.key, label = t.label } end
         look:Add(W.Dropdown(look, "Accent colour", "Follow spec: purple for Arcane, orange for Fire, ice blue for Frost.", accents, bindAppearance("accent")))
         look:Add(W.Dropdown(look, "Font", nil, fonts, bindAppearance("font")))
-        look:Add(W.Slider(look, "Text size", nil, 0.7, 1.5, 0.05, mult, bindAppearance("fontScale")))
+        -- up to 1.2: the cards and the settings window have fixed sizes (bigger: HUD scale)
+        look:Add(W.Slider(look, "Text size", nil, 0.7, 1.2, 0.05, mult, bindAppearance("fontScale")))
         look:Add(W.Dropdown(look, "Bar texture", nil, textures, bindAppearance("texture")))
         look:Add(W.Toggle(look, "Play sounds", nil, bind("appearance", "sounds")))
         look:Add(W.Slider(look, "Out of combat", "HUD opacity out of combat. 0% = hidden: only alerts stay.", 0, 1.0, 0.05, function(v) return v < 0.01 and "hidden" or (math.floor(v * 100 + 0.5) .. "%") end, bind("appearance", "idleAlpha")))
@@ -438,7 +441,7 @@ local function build()
     win.logo = UI:Icon(win.nav, 44)
     win.logo:SetPoint("TOPLEFT", 18, -22)
     win.logo.icon:SetTexture("Interface\\Icons\\Spell_Holy_MagicalSentry")
-    win.name = UI:Text(win.nav, 18)
+    win.name = UI:Text(win.nav, 16)
     win.name:SetPoint("TOPLEFT", win.logo, "TOPRIGHT", 12, -3)
     win.name:SetText(NS.TITLE)
     win.ver = UI:Text(win.nav, 11, P.textDim)

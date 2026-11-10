@@ -18,6 +18,29 @@ return { Object = Object, allFrames = allFrames, fire = fire, tick = tick, run =
 ]==]
 local ICON = {}
 for id, name in assert(io.open(R .. "iconmap.json")):read("*a"):gmatch('"(%d+)":%s*"([%w_]+)"') do ICON[tonumber(id)] = name end
+-- Text width: the page font is DejaVu Serif (on average 0.55 em per glyph; Friz Quadrata is about
+-- 0.52, so text that fits in the render fits in game). Advance widths in 1/100 em, ASCII 32..126.
+local ADV = { 32,40,46,84,64,95,89,27,39,39,50,84,32,34,32,34,64,64,64,64,64,64,64,64,64,64,34,34,84,84,84,54,100,72,73,77,80,73,69,80,87,
+    40,40,75,66,102,88,82,67,82,75,67,68,84,72,103,71,66,69,39,34,39,84,50,50,60,64,56,64,59,36,64,64,32,31,61,32,95,64,60,64,64,48,
+    51,40,64,56,86,56,56,53,64,34,64,84 }
+local function plain(o) return (tostring(o._text or ""):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")) end
+local function width(s, size)
+    local w = 0
+    for i = 1, #s do w = w + (ADV[s:byte(i) - 31] or 60) end
+    return w * size / 100
+end
+local function textWidth(o) return width(plain(o), o._fs or 12) end
+-- lines of a wrapped text in a field w wide: greedy by words, like the browser (and the client)
+local function textLines(o, w)
+    if not (o._wrap and w > 0) then return 1 end
+    local size, lines, x = o._fs or 12, 1, 0
+    for word in plain(o):gmatch("%S+") do
+        local ww = width(word, size)
+        if x > 0 and x + width(" ", size) + ww > w then lines, x = lines + 1, ww
+        else x = x + (x > 0 and width(" ", size) or 0) + ww end
+    end
+    return lines
+end
 local cache, RECT
 local Object
 function HOOK(obj) Object = obj; INSTALL() end
@@ -55,11 +78,7 @@ rec("SetJustifyH", function(self, j) self._jh = j end)
 rec("SetWordWrap", function(self, w) self._wrap = w end)
 rec("SetMaxLines", function(self, n) self._maxLines = n end)
 rec("GetStringHeight", function(self)
-    local size = self._fs or 12
-    local plain = tostring(self._text or ""):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")
-    local w = self._w or 0
-    local lines = (self._wrap and w > 0) and math.max(1, math.ceil(#plain * size * 0.52 / w)) or 1
-    return lines * size * 1.25
+    return textLines(self, self._w or 0) * (self._fs or 12) * 1.25
 end)
 rec("SetDesaturated", function(self, d) self._desat = d end)
 rec("SetFrameLevel", function(self, l) self._level = l end)
@@ -72,6 +91,7 @@ level = function(o)
     if not o._parent then return 0 end
     return level(o._parent) + 1
 end
+rec("GetStringWidth", function(self) return textWidth(self) end)
 rec("GetFrameLevel", function(self) return level(self) end)
 -- like WoW: a frame sized by its anchors reports that size
 rec("GetWidth", function(self)
@@ -138,14 +158,13 @@ local function rect(o)
     local pr = rect(o._parent or UIParent)
     local ow, oh = o._w or 0, o._h or 0
     if o._kind == "FontString" then
-        -- WoW sizes a FontString from its text; estimate it (Friz Quadrata ~0.52 em per char)
+        -- WoW sizes a FontString from its text; estimate it
         local size = o._fs or 12
-        local plain = tostring(o._text or ""):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")
-        local tw = #plain * size * 0.52
+        local tw = textWidth(o)
         if ow == 0 then
             if #xs >= 2 then local lo, hi = solve(xs, 0); ow = hi - lo else ow = tw end
         end
-        local lines = (o._wrap and ow > 0) and math.max(1, math.ceil(tw / ow)) or 1
+        local lines = textLines(o, ow)
         if o._maxLines then lines = math.min(lines, o._maxLines) end
         if oh == 0 then oh = lines * size * 1.25 end
     end
@@ -234,8 +253,12 @@ local function draw(o, list, idx)
         local just = align == "left" and "flex-start" or align == "right" and "flex-end" or "center"
         local shadow = (o._fl or ""):find("OUTLINE") and "text-shadow:0 0 2px #000,0 0 2px #000,0 0 1px #000;" or ""
         local wrap = o._wrap and "white-space:normal;" or "white-space:nowrap;"
-        html = string.format('<div style="position:absolute;left:%.1fpx;top:%.1fpx;width:%.1fpx;height:%.1fpx;display:flex;align-items:center;justify-content:%s;text-align:%s;font-size:%.1fpx;line-height:1.2;color:%s;%s%s"><span>%s</span></div>',
-            r.l, H - r.t, r.r - r.l, r.t - r.b, just, align, size, css(o._tc, alpha), wrap, shadow, esc(o._text))
+        local clamp = o._wrap and o._maxLines and ("display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden;-webkit-line-clamp:" .. o._maxLines) or ""
+        -- class t + data: shot.js checks every text against its field, its parent and the other texts
+        local pr = rect(o._parent)
+        html = string.format('<div class="t" data-z="%d" data-fixed="%d" data-p="%.1f,%.1f" style="position:absolute;left:%.1fpx;top:%.1fpx;width:%.1fpx;height:%.1fpx;display:flex;align-items:center;justify-content:%s;text-align:%s;font-size:%.1fpx;line-height:1.2;color:%s;%s%s"><span style="%s">%s</span></div>',
+            strata(o), ((o._w or 0) > 0 or not r.oneX) and 1 or 0, pr.l, pr.r,
+            r.l, H - r.t, r.r - r.l, r.t - r.b, just, align, size, css(o._tc, alpha), wrap, shadow, clamp, esc(o._text))
     elseif o._kind == "StatusBar" and o._sbc then
         local lo, hi, v = o._min or 0, o._max or 1, o._val or 0
         if type(v) ~= "number" or type(hi) ~= "number" then return end
@@ -256,7 +279,7 @@ local function render(file, title, crop)
         return false
     end)
     local out = {}
-    out[#out + 1] = '<!doctype html><meta charset="utf-8"><style>body{margin:0;background:#000;font-family:"Friz Quadrata TT",Georgia,serif;overflow:hidden}'
+    out[#out + 1] = '<!doctype html><meta charset="utf-8"><style>body{margin:0;background:#000;font-family:"Friz Quadrata TT","DejaVu Serif",Georgia,serif;overflow:hidden}'
         .. '#s{position:relative;width:' .. W .. 'px;height:' .. H .. 'px;background:radial-gradient(ellipse at 50% 40%,#3b4a3c 0%,#1f2b24 50%,#0e1411 100%)}</style>'
         .. '<div id="s"><div style="position:absolute;left:12px;top:10px;font:600 14px system-ui;color:#fff;background:rgba(0,0,0,.6);padding:4px 9px;border-radius:6px;z-index:9">'
         .. title .. '</div><div style="position:absolute;right:12px;top:10px;font:13px system-ui;color:#ffd7a0;background:rgba(0,0,0,.6);padding:4px 9px;border-radius:6px;z-index:9">Rendered from the addon\'s frames (offline client) - not an in-game screenshot</div>'

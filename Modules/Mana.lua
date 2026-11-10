@@ -1,9 +1,9 @@
 --[[
     ArchmageHUD - mana bar
-    A thin bar in the HUD column. Your own mana is not secret on Forever, but
-    if it ever is, the values still go straight into the bar (StatusBar setters
-    accept secrets); only the low-mana tint and the percentage need readable
-    numbers.
+    A thin bar in the HUD column. Your own mana can be secret in combat on
+    Forever: the values still go straight into the bar (StatusBar setters
+    accept secrets) and the client tints it through a colour curve; only the
+    percentage and "hide at full" need readable numbers.
 ]]
 
 local _, NS = ...

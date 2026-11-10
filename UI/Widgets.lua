@@ -30,7 +30,7 @@ local function row(parent, label, desc)
         f.desc:SetPoint("TOPLEFT", f.label, "BOTTOMLEFT", 0, -4)
         f.desc:SetWordWrap(true)
         -- width instead of a RIGHT anchor: a RIGHT point also pins the vertical centre
-        f.descRight = 260   -- room for the control on the right
+        f.descRight = 280   -- room for the control on the right
         local setWidth = f.SetWidth
         function f:SetWidth(w)
             setWidth(self, w)
@@ -107,7 +107,7 @@ function W.Slider(parent, label, desc, min, max, step, fmt, get, set)
     local s = CreateFrame("Slider", nil, f)
     s:SetOrientation("HORIZONTAL")
     s:SetSize(180, 16)
-    s:SetPoint("RIGHT", -70, 0)
+    s:SetPoint("RIGHT", -90, 0)   -- 74 for the value: "10m 00s", "20 runes"
     s:SetMinMaxValues(min, max)
     s:SetValueStep(step)
     s:SetObeyStepOnDrag(true)

@@ -99,7 +99,7 @@ hand it back to the automatic layout. Appearance > **Auto layout** drops all mov
 | **Cooldowns** | Your spec's cooldowns plus the shared ones; the GCD is ignored. An icon glows while the client lights it up and flashes once when the cooldown your cast started is over | icon size, ready flash |
 | **Reminders** | Alerts: Arcane Intellect missing, no armor spell, Ice Barrier not up (Frost), no mana gem, low on Runes of Teleportation/Portals. Absorb icon for Ice Barrier / Mana Shield with time left; for Frost it turns red and pulses while Ice Barrier is not up (in combat, where buffs are secret) | each reminder on/off, also in combat, rune threshold, absorb icon and size, snooze time |
 
-**Appearance:** accent colour (Mage, *Follow spec*, Arcane, Fire, Frost), font, text size, bar texture, sounds,
+**Appearance:** accent colour (Mage, *Follow spec*, Arcane, Fire, Frost), font, text size (0.7 - 1.2x), bar texture, sounds,
 out-of-combat opacity (0% = hidden), show the HUD when an enemy is targeted, HUD scale, edit mode grid,
 reset positions.
 
@@ -176,10 +176,11 @@ Spells.lua          spell table, what each spec watches, spellbook lookup, spec 
 UI/                 Theme (look, rounded textures), Movers (edit mode), Layout (automatic spec layout), Alerts,
                     Native (aura container),
                     Widgets and Options (settings window)
-Modules/            Mana, Procs, Stacks, Debuffs, Cooldowns, Reminders
+Modules/            Mana, Castbar, Procs, Stacks, Debuffs, Cooldowns, Reminders
 Probe.lua           /mage probe and /mage spells
 Media/              rounded-corner textures (TGA)
 tests/run.lua       offline test client
+tests/render/       renders the addon's frames to PNG and checks that no text or frame overlaps
 ```
 
 ## Development
@@ -190,7 +191,9 @@ the mana bar, a combat sequence with the proc card, and the fade. Any Lua error 
 
 `node tests/render/shot.js` renders what the addon really builds (HUD per spec in combat, alerts, edit mode,
 every settings page) from the offline client into `tests/render/out/*.png` (needs Playwright with Chromium and
-network for the spell icons). Look at the images after every change.
+network for the spell icons). It then checks every text (wider than its field, cut off, sticking out of its frame,
+on top of another text) and that no HUD frame covers another, and prints `text check: all good`. Look at the
+images after every change.
 
 ## Blizzard's own displays
 

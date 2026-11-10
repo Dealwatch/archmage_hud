@@ -58,9 +58,9 @@ end
 
 local function makeOverlay(entry)
     local o = CreateFrame("Button", nil, entry.frame)
-    o:SetAllPoints()
+    o:SetPoint("CENTER")   -- sized by fit()
     o:SetFrameLevel(entry.frame:GetFrameLevel() + 30)
-    UI:Skin(o, { 0, 0, 0, 0.35 }, { 1, 1, 1, 1 }, "sm")
+    UI:Skin(o, { 0, 0, 0, 0.7 }, { 1, 1, 1, 1 }, "sm")   -- dark enough that the name reads on top of the preview
     o.label = UI:Text(o, 11, UI.palette.text, "OUTLINE")
     o.label:SetPoint("CENTER")
     o.label:SetText(entry.label)
@@ -88,6 +88,11 @@ local function makeOverlay(entry)
     end)
     o:Hide()
     entry.overlay = o
+end
+
+-- At least as large as its name: readable on small frames too (absorb icon, thin bars).
+local function fit(e)
+    e.overlay:SetSize(math.max(e.frame:GetWidth(), e.overlay.label:GetStringWidth() + 8), math.max(e.frame:GetHeight(), 14))
 end
 
 function Movers:Select(entry)
@@ -197,7 +202,7 @@ end
 
 local function buildHeader()
     header = CreateFrame("Frame", nil, UIParent)
-    header:SetSize(640, 56)
+    header:SetSize(640, 68)   -- title plus two lines of hint
     header:SetPoint("TOP", 0, -40)
     header:SetFrameStrata("DIALOG")
     UI:Skin(header, UI.palette.surface, UI.palette.border, "lg")
@@ -283,4 +288,9 @@ NS:On("PLAYER_REGEN_DISABLED", function()
 end)
 
 -- grid size changed in the settings while edit mode is open (after `local grid`, so it sees it)
-NS:On("MF_APPLIED", function() if NS.editing and grid then Movers:DrawGrid() end end)
+-- ... or a frame changed its size (spec, settings): the overlays follow
+NS:On("MF_APPLIED", function()
+    if not (NS.editing and grid) then return end
+    Movers:DrawGrid()
+    for _, e in ipairs(Movers.list) do if e.overlay then fit(e) end end
+end)

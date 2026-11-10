@@ -5,7 +5,7 @@
         time-left swipe and stacks. The client fills the row itself (native
         aura group), so it works while the buffs are secret in combat.
       * A big card ("Pyroblast!") while the client lights up one of your
-        spells (spell activation overlay: Hot Streak, Brain Freeze, ... -
+        spells (spell activation overlay: Heating Up, Missile Barrage, ... -
         never secret), with an optional sound.
 ]]
 
@@ -14,7 +14,7 @@ local UI, Spells = NS.UI, NS.Spells
 
 local Procs = NS:NewModule("procs", {
     title = "Procs",
-    desc = "Active procs and burst buffs, big card for instant casts",
+    desc = "Active procs, big card for instant casts",
     icon = "Interface\\Icons\\Spell_Shadow_ManaBurn",
 })
 
@@ -66,7 +66,6 @@ local function buildCard()
     card.iconFrame:SetPoint("LEFT", 4, 0)
     card.text = UI:Text(card, 15, { GOLD[1], GOLD[2], GOLD[3], 1 }, "OUTLINE")
     card.text:SetPoint("LEFT", card.iconFrame, "RIGHT", 8, 0)
-    card.text:SetPoint("RIGHT", -8, 0)
     card:Hide()
     NS.Movers:Register(card, "proccard", "Proc card", NS.Layout.For("proccard"))
 end
@@ -88,6 +87,7 @@ function Procs:DrawCard()
     if not show then UI:Glow(card.iconFrame) return end
     card.iconFrame.icon:SetTexture(def.icon)
     card.text:SetText((def.name or def.en) .. "!")
+    card:SetWidth(4 + 32 + 8 + card.text:GetStringWidth() + 12)   -- hugs the name: any length fits, and it stays centred
     UI:Glow(card.iconFrame, GOLD[1], GOLD[2], GOLD[3])
 end
 

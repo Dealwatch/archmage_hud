@@ -15,7 +15,7 @@ local UI, Spells = NS.UI, NS.Spells
 
 local Db = NS:NewModule("debuffs", {
     title = "Target Debuffs",
-    desc = "Your DoTs and debuffs on the target, with real time left",
+    desc = "Your debuffs on the target, real time left",
     icon = "Interface\\Icons\\Spell_Fire_Incinerate",
 })
 
@@ -66,6 +66,7 @@ local function buildRow(key)
             tex:SetPoint("BOTTOMRIGHT", -1, 1)
             tex:SetTexCoord(0.08, 0.92, 0.08, 0.92)
             b:SetIcon(tex)
+            r.nativeIcon = iconFrame
             local bar = CreateFrame("StatusBar", nil, b)
             bar:SetPoint("LEFT", iconFrame, "RIGHT", 2, 0)
             bar:SetSize(bw - bh - 2, bh)
@@ -202,7 +203,10 @@ function Db:Apply()
         UI:SafeShow(r, on and active[key] or false)
         r.native:Restyle(function(b)
             b:SetSize(db.width, db.height)
-            if r.nativeBar then r.nativeBar:SetSize(db.width - db.height - 2, db.height) end
+            if r.nativeBar then
+                r.nativeIcon:SetSize(db.height, db.height)
+                r.nativeBar:SetSize(db.width - db.height - 2, db.height)
+            end
         end)
     end
 end

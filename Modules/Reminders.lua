@@ -16,7 +16,7 @@ local UI, Spells = NS.UI, NS.Spells
 
 local R = NS:NewModule("reminders", {
     title = "Reminders",
-    desc = "Intellect, armor, mana gem, runes; absorb shield icon",
+    desc = "Intellect, armor, mana gem, runes, absorb icon",
     icon = "Interface\\Icons\\Spell_Holy_MagicalSentry",
 })
 
@@ -89,9 +89,9 @@ function R:Update()
     local tele, portal = Spells:KnownAny("teleport"), Spells:KnownAny("portal")
     local runeT, runeP = NS.Try(C_Item and C_Item.GetItemCount, Spells.RUNE_TELEPORT) or 0, NS.Try(C_Item and C_Item.GetItemCount, Spells.RUNE_PORTALS) or 0
     R.runes = runeT .. "/" .. runeP
-    local low = (tele and runeT < db.reagentMin and "Teleportation") or (portal and runeP < db.reagentMin and "Portals")
+    local low = (tele and runeT < db.reagentMin and "teleport") or (portal and runeP < db.reagentMin and "portal")
     if on and db.reagents and low and not inCombat then
-        A:Set("runes", { title = "Low on Runes of " .. low, text = "Buy more at a reagent vendor", icon = "Interface\\Icons\\INV_Misc_Rune_06", priority = 1 })
+        A:Set("runes", { title = "Low on " .. low .. " runes", text = "Buy more at a reagent vendor", icon = "Interface\\Icons\\INV_Misc_Rune_06", priority = 1 })
     else
         A:Clear("runes")
     end

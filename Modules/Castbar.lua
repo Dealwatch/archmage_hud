@@ -142,7 +142,8 @@ function Cb:Init()
     NS:OnUnit("UNIT_SPELLCAST_STOP", "player", function() if not state.channel then finish(nil) end end)
     NS:OnUnit("UNIT_SPELLCAST_CHANNEL_STOP", "player", function() if state.channel then finish(nil) end end)
     NS:OnUnit("UNIT_SPELLCAST_INTERRUPTED", "player", function(_, _, guid) finish("Interrupted", guid) end)
-    NS:OnUnit("UNIT_SPELLCAST_FAILED", "player", function(_, _, guid) finish("Failed", guid) end)
+    -- not for channels: a spell pressed during Arcane Missiles fails too, and a channel has no castGUID to tell them apart
+    NS:OnUnit("UNIT_SPELLCAST_FAILED", "player", function(_, _, guid) if not state.channel then finish("Failed", guid) end end)
     -- after a /reload or a loading screen in the middle of a cast
     NS:On("PLAYER_ENTERING_WORLD", function() if not begin(false) then begin(true) end end)
 end

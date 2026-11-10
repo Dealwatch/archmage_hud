@@ -16,7 +16,7 @@ local UI, Spells = NS.UI, NS.Spells
 
 local St = NS:NewModule("stacks", {
     title = "Stack Bar",
-    desc = "Arcane Blast / Heating Up / Winter's Chill stacks",
+    desc = "Arcane Blast, Heating Up, Winter's Chill",
     icon = "Interface\\Icons\\Spell_Arcane_Blast",
 })
 
@@ -194,7 +194,10 @@ function St:Draw()
     local d = Spells:Get(s.key)
     self.label:SetText(d and d.name or "")
     self.hint:SetText(s.full or "")
-    self.hint:SetShown(state.full and s.full ~= nil)
+    local hint = state.full and s.full ~= nil
+    self.hint:SetShown(hint)
+    -- narrow bar or large text: the hint wins, the name would run into it
+    self.label:SetShown(not hint or self.label:GetStringWidth() + self.hint:GetStringWidth() + 8 <= db.width)
     if state.full and db.glow then UI:Glow(frame, GOLD[1], GOLD[2], GOLD[3]) else UI:Glow(frame) end
 end
 

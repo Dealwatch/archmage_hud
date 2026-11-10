@@ -107,6 +107,24 @@ local function castEnd()
 end
 
 local HUD = "620,500,680,420"     -- x,y,w,h crop around the HUD column
+-- frame check: no HUD frame may cover another one (text is checked by shot.js)
+local function shot(file, title, crop)
+    X.render(file, title, crop)
+    local seen = {}
+    for _, e in ipairs(NS.Movers.list) do
+        local f, r = e.frame, X.rect(e.frame)
+        local vis = true
+        local o = f; while o do if o._shown == false or (o._alpha or 1) < 0.01 then vis = false end o = o._parent end
+        if vis and r.r > r.l and r.t > r.b then
+            for _, s in ipairs(seen) do
+                if r.l < s.r.r - 0.5 and s.r.l < r.r - 0.5 and r.b < s.r.t - 0.5 and s.r.b < r.t - 0.5 then
+                    print("  ! " .. file .. ": frame " .. e.label .. " covers " .. s.label)
+                end
+            end
+            seen[#seen + 1] = { label = e.label, r = r }
+        end
+    end
+end
 local function combat(on)
     if on then C.fire("PLAYER_REGEN_DISABLED"); C.setCombat(true); C.fire("PLAYER_ENTER_COMBAT")
     else C.setCombat(false); C.fire("PLAYER_REGEN_ENABLED") end
@@ -126,7 +144,7 @@ fillAbsorb(nil)
 C.fire("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", 11366)
 C.fire("SPELL_UPDATE_COOLDOWN")
 castNow("Fireball", 25306, 3.5, 1.3)
-C.tick(0.1); X.render("hud_fire", "Fire, in combat: Heating Up 3/3, four debuffs, proc card", HUD)
+C.tick(0.1); shot("hud_fire", "Fire, in combat: Heating Up 3/3, four debuffs, proc card", HUD)
 C.fire("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", 11366); castEnd()
 combat(false)
 
@@ -140,7 +158,7 @@ fillDebuff("frostNova", .72, "5.8"); fillDebuff("frostbite", nil)
 fillAbsorb(nil)          -- Ice Barrier gone: the red pulsing icon shows through
 C.fire("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", 1312002)
 castNow("Frostbolt", 25304, 3.0, 2.1)
-C.tick(0.1); X.render("hud_frost", "Frost, in combat: Winter's Chill 3/5, target frozen, Ice Barrier missing", HUD)
+C.tick(0.1); shot("hud_frost", "Frost, in combat: Winter's Chill 3/5, target frozen, Ice Barrier missing", HUD)
 C.fire("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", 1312002); castEnd()
 combat(false)
 
@@ -155,7 +173,7 @@ fillProcs("arcane", { { "missileBarrage" }, { "heatingUp", "2" }, { "arcanePower
 fillAbsorb("manaShield")
 C.fire("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", 5143)
 castNow("Arcane Missiles", 5143, 2.5, 1.0, true)
-C.tick(0.1); X.render("hud_arcane", "Arcane, in combat: 4 Arcane Blast stacks, low mana", HUD)
+C.tick(0.1); shot("hud_arcane", "Arcane, in combat: 4 Arcane Blast stacks, low mana", HUD)
 C.fire("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", 5143); castEnd()
 combat(false)
 
@@ -165,14 +183,14 @@ C.bag[5514] = 0; C.bag[17031] = 1
 C.fire("UNIT_AURA", "player", {}); C.fire("BAG_UPDATE_DELAYED")
 UnitCanAttack = function() return false end
 C.fire("PLAYER_TARGET_CHANGED")
-X.render("alerts", "Out of combat, no enemy targeted: HUD hidden, only alerts", "560,0,800,420")
+shot("alerts", "Out of combat, no enemy targeted: HUD hidden, only alerts", "560,0,800,420")
 UnitCanAttack = function() return true end
 C.fire("PLAYER_TARGET_CHANGED")
 
 -- edit mode
 book("fire")
 SlashCmdList.ARCHMAGEHUD("edit")
-X.render("edit", "Edit mode (Fire)", "0,0,1920,1080")
+shot("edit", "Edit mode (Fire)", "0,0,1920,1080")
 NS.Movers:Toggle(false)
 
 -- settings window, every page

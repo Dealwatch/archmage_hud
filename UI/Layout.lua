@@ -40,15 +40,17 @@ function Layout.Column()
     local size = db.procs.size
     out.procs = { "TOP", "CENTER", 0, -65 }
     local y = -65 - size - GAP          -- y = top of the next free spot
+    -- the absorb icon sits left of the widest bar, so a large icon never covers one
+    local left = -math.max(db.stacks.width, db.mana.width, db.castbar.width, db.debuffs.width) / 2 - 8
 
     if NS:IsEnabled("stacks") and Spells.SPEC_DATA[NS.spec].stacks then
         y = y - LABEL
         out.stacks = { "TOP", "CENTER", 0, y }
-        out.absorb = { "TOPRIGHT", "CENTER", -db.stacks.width / 2 - 8, y + 2 }
+        out.absorb = { "TOPRIGHT", "CENTER", left, y + 2 }
         y = y - db.stacks.height - GAP
     else
         out.stacks = { "TOP", "CENTER", 0, y - LABEL }
-        out.absorb = { "TOPRIGHT", "CENTER", -db.mana.width / 2 - 8, y }
+        out.absorb = { "TOPRIGHT", "CENTER", left, y }
     end
 
     out.mana = { "TOP", "CENTER", 0, y }

@@ -12,7 +12,7 @@ local UI, Spells = NS.UI, NS.Spells
 
 local Cd = NS:NewModule("cooldowns", {
     title = "Cooldowns",
-    desc = "Your spec's cooldowns plus Blink, Counterspell, Ice Block, ...",
+    desc = "Spec cooldowns plus Blink, Counterspell, ...",
     icon = "Interface\\Icons\\Spell_Arcane_Blink",
 })
 
