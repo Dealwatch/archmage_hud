@@ -143,7 +143,7 @@ end)
 NS.defaults = {
     spec = "auto",              -- "auto" (from talents) | "arcane" | "fire" | "frost"
     modules = {
-        mana = true, procs = true, stacks = true, debuffs = true,
+        mana = true, castbar = true, procs = true, stacks = true, debuffs = true,
         cooldowns = true, reminders = true,
     },
     positions = {},
@@ -163,6 +163,11 @@ NS.defaults = {
         showText = false,       -- percentage on the bar
         hideFull = true,        -- hide out of combat at full mana
         lowPct = 25,            -- bar turns red below this
+    },
+    castbar = {
+        width = 240, height = 14,
+        showTime = true,        -- time left on the bar (when the client lets us read it)
+        hideBlizzard = true,    -- switch off Blizzard's own player cast bar while ours is on
     },
     procs = {
         size = 30,              -- icon size (applies after /reload: the client lays the row out)

@@ -255,6 +255,15 @@ local function buildPages()
         c:Add(W.Toggle(c, "Hide at full mana out of combat", nil, bind("mana", "hideFull")))
     end
 
+    p = newPage("castbar", "Cast Bar", "Your casts and channels, right under the mana bar. Shown only while you cast.", "Interface\\Icons\\Spell_Fire_FlameBolt")
+    p.build = function(self, parent)
+        local c = self:Add(W.Card(parent, "Cast bar", self.icon, bindModule("castbar")))
+        c:Add(W.Slider(c, "Width", nil, 120, 420, 10, px, bind("castbar", "width")))
+        c:Add(W.Slider(c, "Height", nil, 10, 30, 1, px, bind("castbar", "height")))
+        c:Add(W.Toggle(c, "Time left", "Needs the cast times to be readable; in combat the client may hide them.", bind("castbar", "showTime")))
+        c:Add(W.Toggle(c, "Hide Blizzard's cast bar", "So there is only one cast bar. Applies out of combat.", bind("castbar", "hideBlizzard")))
+    end
+
     p = newPage("procs", "Procs", "Only what is up right now, and a big card when a spell turns instant.", "Interface\\Icons\\Spell_Shadow_ManaBurn")
     p.build = function(self, parent)
         local c = self:Add(W.Card(parent, "Procs", self.icon, bindModule("procs")))

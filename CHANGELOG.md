@@ -21,6 +21,9 @@ native aura slots, probe).
 - Ignite, Fire Vulnerability and Frostbite rows appear once you have the talent (Ignite, Improved Scorch, Frostbite);
   spec detection is deterministic for hybrid and low-level talent sets
 - Mana bar
+- New: cast bar in the HUD column under the mana bar (calm neutral colour, name and time left, channels
+  drain, red flash when interrupted, also out of combat). Blizzard's own cast bar is switched off while it
+  is on (setting). Works with secret cast times too (bar fills, no time text); `/mage probe` tells which
 - Fixes taken over from Farseer's in-game test: settings sliders save (they never did: `bind()` in the middle of
   an argument list yields one value), test that every slider saves; proc icon size applies without /reload;
   edit-mode grid redraws; settings text no longer runs under buttons; mana bar turns red in combat through a

@@ -6,8 +6,8 @@
     spells you do not know take no space, and the rest closes up.
 
     Top to bottom: proc card, proc row, stack bar (most important for every
-    spec, in the middle of your view), mana, your debuffs on the target, the
-    cooldown row. The absorb icon sits left of the stack bar.
+    spec, in the middle of your view), mana, cast bar, your debuffs on the
+    target, the cooldown row. The absorb icon sits left of the stack bar.
 
     A frame you drag in edit mode keeps that spot (saved per spec); a right-
     click in edit mode hands it back to this layout.
@@ -53,6 +53,9 @@ function Layout.Column()
 
     out.mana = { "TOP", "CENTER", 0, y }
     if NS:IsEnabled("mana") then y = y - db.mana.height - GAP end
+
+    out.castbar = { "TOP", "CENTER", 0, y }   -- space kept while idle, so nothing jumps at a cast
+    if NS:IsEnabled("castbar") then y = y - db.castbar.height - GAP - 4 end   -- a little air: yours above, the target's below
 
     out.debuffs = { "TOP", "CENTER", 0, y }
     local rows = Layout.DebuffRows()

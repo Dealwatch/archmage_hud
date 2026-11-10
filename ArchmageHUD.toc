@@ -18,6 +18,7 @@ UI\Alerts.lua
 UI\Native.lua
 
 Modules\Mana.lua
+Modules\Castbar.lua
 Modules\Procs.lua
 Modules\Stacks.lua
 Modules\Debuffs.lua

@@ -86,6 +86,20 @@ C.playerAuras[2] = { name = "Mage Armor", spellId = 6117, duration = 1800 }
 C.bag[5514] = 1
 C.fire("UNIT_AURA", "player", {}); C.fire("BAG_UPDATE_DELAYED")
 
+-- a cast as the client reports it (times readable: the bar shows the time left too)
+local function castNow(name, id, total, done, channel)
+    local t = C.now() * 1000
+    local info = { name, t - done * 1000, t + (total - done) * 1000, id }
+    C.setCombat(false)
+    if channel then C.setChannel(info); C.fire("UNIT_SPELLCAST_CHANNEL_START", "player", "g", id)
+    else C.setCast(info); C.fire("UNIT_SPELLCAST_START", "player", "g", id) end
+    C.setCombat(true)
+end
+local function castEnd()
+    C.setCast(nil); C.setChannel(nil)
+    C.fire("UNIT_SPELLCAST_STOP", "player", "g", 0); C.fire("UNIT_SPELLCAST_CHANNEL_STOP", "player", "g", 0)
+end
+
 local HUD = "620,500,680,420"     -- x,y,w,h crop around the HUD column
 local function combat(on)
     if on then C.fire("PLAYER_REGEN_DISABLED"); C.setCombat(true); C.fire("PLAYER_ENTER_COMBAT")
@@ -105,8 +119,9 @@ fillDebuff("pyroblast", .78, "9.4"); fillDebuff("frostfireBolt", nil)
 fillAbsorb(nil)
 C.fire("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", 11366)
 C.fire("SPELL_UPDATE_COOLDOWN")
+castNow("Fireball", 25306, 3.5, 1.3)
 C.tick(0.1); X.render("hud_fire", "Fire, in combat: Heating Up 3/3, four debuffs, proc card", HUD)
-C.fire("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", 11366)
+C.fire("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", 11366); castEnd()
 combat(false)
 
 -- FROST
@@ -118,8 +133,9 @@ fillProcs("frost", { { "fingersOfFrost", "2" }, { "clearcasting" } })
 fillDebuff("frostNova", .72, "5.8"); fillDebuff("frostbite", nil)
 fillAbsorb(nil)          -- Ice Barrier gone: the red pulsing icon shows through
 C.fire("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", 1312002)
+castNow("Frostbolt", 25304, 3.0, 2.1)
 C.tick(0.1); X.render("hud_frost", "Frost, in combat: Winter's Chill 3/5, target frozen, Ice Barrier missing", HUD)
-C.fire("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", 1312002)
+C.fire("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", 1312002); castEnd()
 combat(false)
 
 -- ARCANE
@@ -132,8 +148,9 @@ NS.modules.stacks.state.full = true; NS.modules.stacks:Draw()
 fillProcs("arcane", { { "missileBarrage" }, { "heatingUp", "2" }, { "arcanePower" } })
 fillAbsorb("manaShield")
 C.fire("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW", 5143)
+castNow("Arcane Missiles", 5143, 2.5, 1.0, true)
 C.tick(0.1); X.render("hud_arcane", "Arcane, in combat: 4 Arcane Blast stacks, low mana", HUD)
-C.fire("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", 5143)
+C.fire("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE", 5143); castEnd()
 combat(false)
 
 -- out of combat: alerts
@@ -154,7 +171,7 @@ NS.Movers:Toggle(false)
 
 -- settings window, every page
 SlashCmdList.ARCHMAGEHUD("")
-for _, p in ipairs({ "overview", "mana", "procs", "stacks", "debuffs", "cooldowns", "reminders", "appearance" }) do
+for _, p in ipairs({ "overview", "mana", "castbar", "procs", "stacks", "debuffs", "cooldowns", "reminders", "appearance" }) do
     NS.Options:Show(p)
     X.render("opt_" .. p, "Settings: " .. p, "490,210,940,660")
 end

@@ -176,7 +176,17 @@ function UnitIsDeadOrGhost() return false end
 function IsMounted() return false end
 function IsShiftKeyDown() return false end
 function InCombatLockdown() return combat end
-function UnitCastingInfo() return nil end
+local casting, channeling   -- { name, startMS, endMS, spellID }
+function UnitCastingInfo()
+    local c = casting
+    if not c then return nil end
+    return S(c[1]), S(c[1]), S(1000 + c[4]), S(c[2]), S(c[3]), false, S("guid"), false, S(c[4])
+end
+function UnitChannelInfo()
+    local c = channeling
+    if not c then return nil end
+    return S(c[1]), S(c[1]), S(1000 + c[4]), S(c[2]), S(c[3]), false, false, S(c[4])
+end
 function GetInventoryItemID(_, slot) return 1000 + slot end
 GetBindingKey = function() return nil end
 local mana = 1000
@@ -392,7 +402,7 @@ end)
 
 run("every slider saves its setting", function()
     SlashCmdList.ARCHMAGEHUD("")
-    for _, key in ipairs({ "overview", "mana", "procs", "stacks", "debuffs", "cooldowns", "reminders", "appearance" }) do
+    for _, key in ipairs({ "overview", "mana", "castbar", "procs", "stacks", "debuffs", "cooldowns", "reminders", "appearance" }) do
         NS.Options:Show(key)
     end
     local function dump(t, out)
@@ -432,6 +442,47 @@ run("every slider saves its setting", function()
     assert(m >= 25, "all switches found: " .. m)
     SlashCmdList.ARCHMAGEHUD("reset confirm")
     NS.Options:Toggle()
+end)
+
+run("cast bar", function()
+    local f = _G.ArchmageHUDCastbar
+    local bar = NS.modules.castbar.bar
+    assert(not f:IsShown(), "hidden while not casting")
+    casting = { "Fireball", now * 1000, now * 1000 + 3500, 133 }
+    fire("UNIT_SPELLCAST_START", "player", "guid", 133)
+    assert(f:IsShown() and bar.name:GetText() == "Fireball", "shown with the spell name")
+    tick(1)
+    assert(bar.time:GetText() == "2.5" and math.abs(bar:GetValue() - 1) < 0.01, "fills, time left " .. tostring(bar.time:GetText()))
+    fire("UNIT_SPELLCAST_FAILED", "player", "guid2", 2136)   -- Fire Blast pressed mid-cast: the cast goes on
+    assert(f:IsShown() and bar.name:GetText() == "Fireball", "a spell pressed while casting is no failed cast")
+    casting = nil
+    fire("UNIT_SPELLCAST_STOP", "player", "guid", 133)      -- STOP before INTERRUPTED
+    fire("UNIT_SPELLCAST_INTERRUPTED", "player", "guid", 133)
+    assert(f:IsShown() and bar.name:GetText() == "Interrupted", "red interrupted after STOP")
+    now = now + 1; runTimers()
+    assert(not f:IsShown(), "gone after the interrupt flash")
+    -- channel drains
+    channeling = { "Arcane Missiles", now * 1000, now * 1000 + 5000, 5143 }
+    fire("UNIT_SPELLCAST_CHANNEL_START", "player", "guid", 5143)
+    tick(2)
+    assert(math.abs(bar:GetValue() - 3) < 0.01, "channel drains")
+    channeling = nil
+    fire("UNIT_SPELLCAST_CHANNEL_STOP", "player", "guid", 5143)
+    assert(not f:IsShown(), "hidden after the channel")
+    -- secret cast times in combat: the bar still runs, no time text
+    fire("PLAYER_REGEN_DISABLED"); combat = true
+    casting = { "Frostbolt", now * 1000, now * 1000 + 3000, 116 }
+    fire("UNIT_SPELLCAST_START", "player", "guid", 116)
+    tick(0.5)
+    assert(f:IsShown() and bar.time:GetText() == "", "secret times: bar shown, no time text")
+    casting = nil
+    fire("UNIT_SPELLCAST_STOP", "player", "guid", 116)
+    combat = false; fire("PLAYER_REGEN_ENABLED")
+    assert(not f:IsShown(), "hidden after the secret cast")
+    -- its spot: between mana and debuffs, kept while idle
+    local L = NS.Layout.Column()
+    assert(L.castbar[4] < L.mana[4] and L.debuffs[4] < L.castbar[4], "cast bar sits between mana and debuffs")
+    assert(f:GetParent() == UIParent, "outside the fading HUD root: out-of-combat casts show")
 end)
 
 run("ready flash and live proc size", function()

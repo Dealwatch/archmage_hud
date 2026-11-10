@@ -160,6 +160,8 @@ local function probe()
     end
     add("target name:", try(UnitName, "target"))
     add("mana:", try(UnitPower, "player", 0), "/", try(UnitPowerMax, "player", 0), "| percent:", UnitPowerPercent and try(UnitPowerPercent, "player", 0) or "-")
+    add("cast bar: last cast times", v(NS.modules.castbar and NS.modules.castbar.lastMode or "no cast yet"),
+        "| Blizzard cast bar:", _G.PlayerCastingBarFrame and "PlayerCastingBarFrame" or _G.CastingBarFrame and "CastingBarFrame" or "not found")
     add("talents known (Ignite 11119 / Improved Scorch 11095 / Frostbite 11071):",
         try(IsPlayerSpell, 11119), "/", try(IsPlayerSpell, 11095), "/", try(IsPlayerSpell, 11071))
     add("")

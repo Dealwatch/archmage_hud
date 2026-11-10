@@ -13,7 +13,8 @@ src = src:gsub("%-%- load the addon in TOC order", "HOOK(Object)\n-- load the ad
 src = src .. [==[
 return { Object = Object, allFrames = allFrames, fire = fire, tick = tick, run = run, NS = NS,
     BOOK = BOOK, SPELLS = SPELLS, playerAuras = playerAuras, targetAuras = targetAuras, bag = bag,
-    setCombat = function(v) combat = v end, setMana = function(v) mana = v end }
+    setCombat = function(v) combat = v end, setMana = function(v) mana = v end,
+    setCast = function(c) casting = c end, setChannel = function(c) channeling = c end, now = function() return now end }
 ]==]
 local ICON = {}
 for id, name in assert(io.open(R .. "iconmap.json")):read("*a"):gmatch('"(%d+)":%s*"([%w_]+)"') do ICON[tonumber(id)] = name end
