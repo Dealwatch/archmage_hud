@@ -18,7 +18,7 @@ in WowUp by themselves (every published release).
 
 **Manual:**
 
-1. Download `ArchmageHUD-<version>.zip` (from a release, or the zip you were sent).
+1. Download `ArchmageHUD-<version>-forever.zip` (from a release, or the zip you were sent).
 2. Unzip it into `World of Warcraft\_forever_\Interface\AddOns\` so that you get
    `...\AddOns\ArchmageHUD\ArchmageHUD.toc` (not `ArchmageHUD\ArchmageHUD\...`).
 3. Restart the game completely. A `/reload` is not enough for a new addon.
