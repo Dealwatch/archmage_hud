@@ -3,3 +3,4 @@ package-as: ArchmageHUD
 ignore:
   - tests
   - .github
+  - CLAUDE.md

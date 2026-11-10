@@ -183,6 +183,10 @@ tests/run.lua       offline test client
 aura container. It drives login, every settings page, the spec switch, edit mode, the reminders, the stack bar,
 the mana bar, a combat sequence with the proc card, and the fade. Any Lua error fails the run.
 
+`node tests/render/shot.js` renders what the addon really builds (HUD per spec in combat, alerts, edit mode,
+every settings page) from the offline client into `tests/render/out/*.png` (needs Playwright with Chromium and
+network for the spell icons). Look at the images after every change.
+
 ## Blizzard's own displays
 
 Forever has a Cooldown Manager (Options > Gameplay Enhancements). It is off unless you turned it on, and it is not
