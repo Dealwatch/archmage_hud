@@ -17,4 +17,7 @@ WoW Forever addon (interface 16001, Lua 5.1). English UI; the owner talks German
 - `bind()` (two return values) must be the last argument of a call, or only `get` arrives.
 - Text with a TOPLEFT point plus a RIGHT point gets its vertical centre pinned too: use a width instead.
 - `PLAYER_REGEN_DISABLED` fires before `InCombatLockdown()` is true: visibility uses `NS.InCombat()`.
+- A value that may be secret is never compared, not even `== nil`: check `NS.IsSecret(v)` first.
+- Setters that take secrets from addon code: `SetText`, `SetValue`, `SetMinMaxValues`, `SetStatusBarColor`.
+  `StatusBar:SetTimerDuration` takes a secret duration only from Blizzard code: try it in `pcall`, keep a fallback.
 - Native aura slots: retry with `later()` when auras are secret out of combat, never `AfterCombat` alone.

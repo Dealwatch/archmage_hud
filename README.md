@@ -91,7 +91,7 @@ hand it back to the automatic layout. Appearance > **Auto layout** drops all mov
 
 | Module | What it shows | Settings |
 |---|---|---|
-| **Cast Bar** | Your casts and channels right under the mana bar, in a calm neutral colour: spell name, time left; channels drain; red for a moment when interrupted. Only while you cast, also out of combat (Teleport, conjures). Switches Blizzard's own cast bar off so there is only one | width, height, time left, hide Blizzard's cast bar |
+| **Cast Bar** | Your casts and channels right under the mana bar, in a calm neutral colour: spell name, time left; channels drain; red for a moment when interrupted. Only while you cast, also out of combat (Teleport, conjures). Switches Blizzard's own cast bar off so there is only one (back on: /reload) | width, height, time left, hide Blizzard's cast bar |
 | **Mana Bar** | Thin mana bar, red when low, hidden at full mana out of combat | width, height, red below %, percentage text, hide at full |
 | **Procs** | One centred row that shows only active procs and burst buffs of your spec, with a time-left swipe and stacks. A big card ("Pyroblast!", "Ice Lance!") while the client lights up one of your spells, with an optional sound | icon size, card on/off, sound |
 | **Stack Bar** | Segmented bar for your spec's stacks, gold at full with a glow, a sound and a hint | width, height, glow, sound, hide at zero |
@@ -158,8 +158,9 @@ Plus every Classic rank of the other spells (see `Spells.lua`). `/mage spells` p
 
 - Whether the native aura container works in the real client (`/mage probe` shows `native` per slot).
 - Whether the client lights up spells for Heating Up / Missile Barrage / Fingers of Frost (proc card).
-- Cast bar: `/mage probe` after a cast in combat shows whether the cast times were readable (with time text) or
-  secret (bar still fills, no time text), and whether Blizzard's cast bar was found to switch off.
+- Cast bar: `/mage probe` after a cast in combat shows how the bar ran: `native` (the client's duration object),
+  `readable` (with time text) or `secret` (bar still fills, no time text), and whether Blizzard's cast bar was
+  found to switch off.
 - Mana: when the value is secret the client colours the bar through a colour curve (works in Farseer); "hide at
   full" needs readable mana, so with secret mana the bar stays visible.
 - The debuff lists (Fire Vulnerability is personal on Forever and filtered as yours; Frostbite/Frost Nova count as yours).

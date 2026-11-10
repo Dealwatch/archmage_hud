@@ -22,8 +22,10 @@ native aura slots, probe).
   spec detection is deterministic for hybrid and low-level talent sets
 - Mana bar
 - New: cast bar in the HUD column under the mana bar (calm neutral colour, name and time left, channels
-  drain, red flash when interrupted, also out of combat). Blizzard's own cast bar is switched off while it
-  is on (setting). Works with secret cast times too (bar fills, no time text); `/mage probe` tells which
+  drain, a finished cast stays full for a moment, red when interrupted, also out of combat). Fill from the
+  client's duration object where the client allows it, else from the cast times, readable or secret
+  (then without time text); `/mage probe` tells which. Blizzard's own cast bar is switched off while it is
+  on, with C-side calls only (no taint); turning it back on needs a /reload. Aligned with Farseer's cast bar
 - Fixes taken over from Farseer's in-game test: settings sliders save (they never did: `bind()` in the middle of
   an argument list yields one value), test that every slider saves; proc icon size applies without /reload;
   edit-mode grid redraws; settings text no longer runs under buttons; mana bar turns red in combat through a

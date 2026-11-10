@@ -94,10 +94,16 @@ local function castNow(name, id, total, done, channel)
     if channel then C.setChannel(info); C.fire("UNIT_SPELLCAST_CHANNEL_START", "player", "g", id)
     else C.setCast(info); C.fire("UNIT_SPELLCAST_START", "player", "g", id) end
     C.setCombat(true)
+    -- client-driven fill (duration object): draw what the client would
+    local cb = NS.modules.castbar
+    if cb.state.mode == "native" then
+        cb.bar:SetMinMaxValues(0, total); cb.bar:SetValue(channel and total - done or done)
+    end
 end
 local function castEnd()
     C.setCast(nil); C.setChannel(nil)
     C.fire("UNIT_SPELLCAST_STOP", "player", "g", 0); C.fire("UNIT_SPELLCAST_CHANNEL_STOP", "player", "g", 0)
+    C.tick(1)   -- past the short hold of a finished cast
 end
 
 local HUD = "620,500,680,420"     -- x,y,w,h crop around the HUD column

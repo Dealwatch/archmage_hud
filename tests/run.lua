@@ -182,6 +182,10 @@ function UnitCastingInfo()
     if not c then return nil end
     return S(c[1]), S(c[1]), S(1000 + c[4]), S(c[2]), S(c[3]), false, S("guid"), false, S(c[4])
 end
+-- duration object: a plain one out of combat, a secret one in combat (SetTimerDuration refuses that)
+function UnitCastingDuration() if casting then return combat and secret() or { _duration = true } end end
+function UnitChannelDuration() if channeling then return combat and secret() or { _duration = true } end end
+PlayerCastingBarFrame = CreateFrame("Frame", "PlayerCastingBarFrame")
 function UnitChannelInfo()
     local c = channeling
     if not c then return nil end
@@ -446,37 +450,47 @@ end)
 
 run("cast bar", function()
     local f = _G.ArchmageHUDCastbar
-    local bar = NS.modules.castbar.bar
+    local Cb = NS.modules.castbar
+    local bar = Cb.bar
     assert(not f:IsShown(), "hidden while not casting")
+    assert(not PlayerCastingBarFrame:IsShown(), "Blizzard's cast bar switched off")
+    -- out of combat: the client's duration object drives the fill
     casting = { "Fireball", now * 1000, now * 1000 + 3500, 133 }
     fire("UNIT_SPELLCAST_START", "player", "guid", 133)
-    assert(f:IsShown() and bar.name:GetText() == "Fireball", "shown with the spell name")
+    assert(f:IsShown() and bar.name:GetText() == "Fireball" and Cb.state.mode == "native", "shown, client fill")
     tick(1)
-    assert(bar.time:GetText() == "2.5" and math.abs(bar:GetValue() - 1) < 0.01, "fills, time left " .. tostring(bar.time:GetText()))
+    assert(bar.time:GetText() == "2.5", "time left " .. tostring(bar.time:GetText()))
     fire("UNIT_SPELLCAST_FAILED", "player", "guid2", 2136)   -- Fire Blast pressed mid-cast: the cast goes on
-    assert(f:IsShown() and bar.name:GetText() == "Fireball", "a spell pressed while casting is no failed cast")
+    assert(Cb.state.active and bar.name:GetText() == "Fireball", "a spell pressed while casting is no failed cast")
     casting = nil
     fire("UNIT_SPELLCAST_STOP", "player", "guid", 133)      -- STOP before INTERRUPTED
     fire("UNIT_SPELLCAST_INTERRUPTED", "player", "guid", 133)
-    assert(f:IsShown() and bar.name:GetText() == "Interrupted", "red interrupted after STOP")
-    now = now + 1; runTimers()
-    assert(not f:IsShown(), "gone after the interrupt flash")
-    -- channel drains
+    fire("UNIT_SPELLCAST_FAILED", "player", "guid", 133)
+    assert(f:IsShown() and bar.name:GetText() == "Interrupted", "red interrupted after STOP, first message stays")
+    tick(1)
+    assert(not f:IsShown(), "gone after the interrupt hold")
+    -- readable times without a duration object: our own fill, channels drain
+    local dur = UnitChannelDuration; UnitChannelDuration = nil
     channeling = { "Arcane Missiles", now * 1000, now * 1000 + 5000, 5143 }
-    fire("UNIT_SPELLCAST_CHANNEL_START", "player", "guid", 5143)
+    fire("UNIT_SPELLCAST_CHANNEL_START", "player", "guid3", 5143)
     tick(2)
-    assert(math.abs(bar:GetValue() - 3) < 0.01, "channel drains")
+    assert(Cb.state.mode == "readable", "readable fill")
+    local lo, hi = bar:GetMinMaxValues()
+    assert(math.abs((bar:GetValue() - lo) / (hi - lo) - 0.6) < 0.01, "channel drains")
     channeling = nil
-    fire("UNIT_SPELLCAST_CHANNEL_STOP", "player", "guid", 5143)
+    fire("UNIT_SPELLCAST_CHANNEL_STOP", "player", "guid3", 5143)
+    tick(0.5)
     assert(not f:IsShown(), "hidden after the channel")
-    -- secret cast times in combat: the bar still runs, no time text
+    UnitChannelDuration = dur
+    -- in combat: secret duration refused, secret times -> still fills, no time text
     fire("PLAYER_REGEN_DISABLED"); combat = true
     casting = { "Frostbolt", now * 1000, now * 1000 + 3000, 116 }
-    fire("UNIT_SPELLCAST_START", "player", "guid", 116)
+    fire("UNIT_SPELLCAST_START", "player", "guid4", 116)
     tick(0.5)
-    assert(f:IsShown() and bar.time:GetText() == "", "secret times: bar shown, no time text")
+    assert(f:IsShown() and Cb.state.mode == "secret" and bar.time:GetText() == "", "secret: shown, no time text")
     casting = nil
-    fire("UNIT_SPELLCAST_STOP", "player", "guid", 116)
+    fire("UNIT_SPELLCAST_STOP", "player", "guid4", 116)
+    tick(0.5)
     combat = false; fire("PLAYER_REGEN_ENABLED")
     assert(not f:IsShown(), "hidden after the secret cast")
     -- its spot: between mana and debuffs, kept while idle
