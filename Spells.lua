@@ -111,7 +111,8 @@ Spells.DEFS = DEFS
 --           Arcane Missiles on Missile Barrage; keep Arcane Intellect and Ice Barrier up at all times.
 -- Lists only name spells; ones you do not know are skipped.
 --   procs     buffs on you for the proc row (only shown while up)
---   stacks    one stacking aura for the segmented bar: { key, unit, filter, max, full = hint text }
+--   stacks    one stacking aura for the segmented bar: { key, unit, filter, max, full = the spell to cast at
+--             full stacks: its name, in the client's language like the proc card, is the hint }
 --   debuffs   your debuffs on the target, one bar each
 --   cooldowns spec cooldowns, in front of the shared ones
 --   card      spell shown on the proc card in edit mode
@@ -123,7 +124,7 @@ Spells.DEFS = DEFS
 Spells.SPEC_DATA = {
     arcane = {
         procs = { "missileBarrage", "clearcasting", "arcanePower", "presenceOfMind" },
-        stacks = { key = "arcaneBlast", unit = "player", filter = "HELPFUL", max = 4, full = "Spend: Arcane Wrath",
+        stacks = { key = "arcaneBlast", unit = "player", filter = "HELPFUL", max = 4, full = "arcaneWrath",
                    marks = { { 3, "arcaneWrath" }, { 4, "arcanePower", "presenceOfMind" } },   -- Fire Blast: on cooldown, see the cooldown row
                    tip = "A lit icon below: cast it. The small pips are Heating Up" },
         second = { key = "heatingUp", unit = "player", filter = "HELPFUL", max = 3, mark = "pyroblast" },
@@ -134,7 +135,7 @@ Spells.SPEC_DATA = {
     },
     fire = {
         procs = { "combustion", "wakeOfFire", "clearcasting", "missileBarrage", "fingersOfFrost" },
-        stacks = { key = "heatingUp", unit = "player", filter = "HELPFUL", max = 3, full = "Pyroblast!",
+        stacks = { key = "heatingUp", unit = "player", filter = "HELPFUL", max = 3, full = "pyroblast",
                    marks = { { 3, "pyroblast" } }, tip = "Heating Up: the Pyroblast icon lights up at 3" },
         opener = { "pyroblast", "fireball", "scorch", "fireBlast" },
         debuffs = { "fireVuln", "fireball", "ignite", "pyroblast", "frostfireBolt" },
@@ -143,7 +144,7 @@ Spells.SPEC_DATA = {
     },
     frost = {
         procs = { "fingersOfFrost", "clearcasting", "missileBarrage", "presenceOfMind" },
-        stacks = { key = "wintersChill", unit = "target", filter = "HARMFUL|PLAYER", max = 5, full = "Cone of Cold!",
+        stacks = { key = "wintersChill", unit = "target", filter = "HARMFUL|PLAYER", max = 5, full = "coneOfCold",
                    marks = { { 5, "coneOfCold" } }, tip = "Winter's Chill: the Cone of Cold icon lights up at 5" },
         opener = { "frostbolt", "frostNova", "iceLance", "frostbolt" },
         debuffs = { "frostNova", "frostbite" },

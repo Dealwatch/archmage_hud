@@ -11,7 +11,7 @@ local UI = NS.UI
 local Alerts = { active = {}, cards = {}, snoozed = {} }
 NS.Alerts = Alerts
 
-local CARD_W, CARD_H, GAP = 300, 44, 6
+local CARD_W, CARD_H, GAP = 300, 48, 6   -- 48: title and text keep apart at text size 1.2x
 
 local anchor = CreateFrame("Frame", "ArchmageHUDAlerts", UIParent)
 anchor:SetSize(CARD_W, CARD_H)

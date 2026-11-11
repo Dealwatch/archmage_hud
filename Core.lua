@@ -139,7 +139,7 @@ end)
 ---------------------------------------------------------------------------
 
 -- One clean HUD column (240 wide) under your character, one icon size (30)
--- for every icon row. Positions are CENTER offsets on UIParent.
+-- for the proc row and the spec's cooldowns (the shared cooldowns are smaller). Positions are CENTER offsets on UIParent.
 NS.defaults = {
     spec = "auto",              -- "auto" (from talents) | "arcane" | "fire" | "frost"
     modules = {

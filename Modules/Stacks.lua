@@ -6,9 +6,13 @@
     stacks, with an optional glow and sound.
 
     The client fills the bar itself through a native aura slot, so it is right
-    even while the aura is secret in combat. Glow and sound need us to *know*
-    the stacks, which works whenever the aura is readable. Without a native
-    slot the bar falls back to our own pips.
+    even while the aura is secret in combat. Gold, hint, glow and sound need
+    us to *know* the stacks, which works whenever the aura is readable.
+    Without a native slot the bar falls back to our own pips.
+
+    Under the bar: the rotation marks (buildMark), icons the client lights up
+    gold at their stack count, also while the stacks are secret; and for
+    Arcane the pips of a second aura, Heating Up (buildSecond).
 ]]
 
 local _, NS = ...
@@ -205,7 +209,7 @@ function St:Init()
     end
     self.dividers:Hide()
 
-    self.label = UI:Text(frame, 10, UI.palette.textDim, "OUTLINE")
+    self.label = UI:Text(frame, 11, UI.palette.textDim, "OUTLINE")
     self.label:SetPoint("BOTTOMLEFT", frame, "TOPLEFT", 0, 3)
     self.hint = UI:Text(frame, 11, { GOLD[1], GOLD[2], GOLD[3], 1 }, "OUTLINE")
     self.hint:SetPoint("BOTTOMRIGHT", frame, "TOPRIGHT", 0, 3)
@@ -290,7 +294,8 @@ function St:Draw()
     end
     local d = Spells:Get(s.key)
     self.label:SetText(d and d.name or "")
-    self.hint:SetText(s.full or "")
+    local fd = Spells:Get(s.full)
+    self.hint:SetText(fd and (fd.name or fd.en) .. "!" or "")
     local hint = state.full and s.full ~= nil and self.hint:GetStringWidth() <= db.width   -- a bar too narrow for it: the lit mark says it
     self.hint:SetShown(hint)
     -- narrow bar or large text: the hint wins, the name would run into it

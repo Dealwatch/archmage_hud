@@ -1,7 +1,8 @@
 --[[
     ArchmageHUD - target debuffs
     One bar per debuff your spec keeps on the target (Spells.SPEC_DATA[spec]
-    .debuffs), e.g. Living Bomb or Ignite: icon, time left and stacks.
+    .debuffs), e.g. Fireball or Ignite: icon, time left and stacks. One more
+    bar of the same kind in its own frame: your Polymorph on the focus.
 
     Each bar is a native aura slot on the target ("HARMFUL|PLAYER"), so the
     client draws the real time left even while the debuff is secret in

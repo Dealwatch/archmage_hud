@@ -18,7 +18,7 @@ UI.TEXTURES = {
 }
 
 UI.FONTS = {
-    { key = "Fonts\\FRIZQT__.TTF", label = "Friz Quadrata" },
+    { key = "Fonts\\FRIZQT__.TTF", label = "Default (Friz Quadrata)" },
     { key = "Fonts\\ARIALN.TTF",   label = "Arial Narrow" },
     { key = "Fonts\\skurri.ttf",   label = "Skurri" },
     { key = "Fonts\\MORPHEUS.TTF", label = "Morpheus" },
@@ -70,14 +70,20 @@ end
 ---------------------------------------------------------------------------
 
 local fontStrings = setmetatable({}, { __mode = "k" })   -- fs -> { size, flags }
+local FRIZ = "Fonts\\FRIZQT__.TTF"
+
+-- The default font is the client's own standard font: the same Friz Quadrata on Latin clients, and
+-- the font that has the glyphs on Russian, Korean and Chinese ones (spell names are localized).
+local function default() return _G.STANDARD_TEXT_FONT or FRIZ end
 
 function UI:Font(fs, size, flags)
     fontStrings[fs] = { size = size, flags = flags or "" }
     local a = NS.db and NS.db.appearance
-    local path = a and a.font or "Fonts\\FRIZQT__.TTF"
+    local path = a and a.font or FRIZ
+    if path == FRIZ then path = default() end
     local scale = a and a.fontScale or 1
     if not fs:SetFont(path, size * scale, flags or "") then
-        fs:SetFont("Fonts\\FRIZQT__.TTF", size * scale, flags or "")
+        fs:SetFont(default(), size * scale, flags or "")
     end
     return fs
 end

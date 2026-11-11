@@ -14,7 +14,13 @@ opener follows only your own casts.
   one glowing gold, gone when it is through
 - The column is ordered by what you do with it: proc card, stacks and marks, mana, cast bar and the cooldown row on
   top (act), your debuffs and the Polymorph timer below (watch). Gold always means "cast this"
-- Larger numbers on the stack timer and the debuff bars
+- Larger numbers on the stack timer and the debuff bars, larger stack bar name; smaller countdown numbers on the
+  small cooldown icons
+- The stack bar's hint is the spell's name in your client's language, like the proc card ("Pyroblast!",
+  "Arcane Wrath!", "Cone of Cold!"); text size starts at 0.8x (smaller was not readable); alert cards are a little
+  taller so title and text keep apart at 1.2x
+- The default font is the client's own standard font, so localized spell names have their glyphs on Russian,
+  Korean and Chinese clients too
 - `/mage legend` (also in Appearance): one sentence beside every HUD element for 10 seconds
 - Mana gem and Evocation as two small icons at the end of the mana bar, with their cooldowns; the gem is grey when
   you have none. Evocation left the cooldown row

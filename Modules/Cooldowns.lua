@@ -59,6 +59,8 @@ function Cd:Update()
             f:SetPoint("LEFT", row, "LEFT", x, 0)
             x = x + s + 4
             f.icon:SetTexture(def.icon or "Interface\\Icons\\INV_Misc_QuestionMark")
+            -- the client's countdown numbers are made for full-size icons: a small font on the small tier
+            if not rotation[key] and f.cd.SetCountdownFont then pcall(f.cd.SetCountdownFont, f.cd, "NumberFontNormalSmall") end
             UI:SpellCooldown(f.cd, def.id)
             local usable = true
             if C_Spell.IsSpellUsable then

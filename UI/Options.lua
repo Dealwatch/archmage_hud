@@ -315,7 +315,7 @@ local function buildPages()
         local c = self:Add(W.Card(parent, "Target debuffs", self.icon, bindModule("debuffs")))
         c:Add(W.Slider(c, "Width", nil, 120, 360, 10, px, bind("debuffs", "width")))
         c:Add(W.Slider(c, "Height", nil, 8, 30, 1, px, bind("debuffs", "height")))
-        c:Add(W.Toggle(c, "Polymorph on your focus", "A bar under the HUD with the time left of your Polymorph on the focus target.", bind("debuffs", "focus")))
+        c:Add(W.Toggle(c, "Polymorph on your focus", "A bar under the debuffs with the time left of your Polymorph on the focus target.", bind("debuffs", "focus")))
         local info = c:Add(W.ButtonRow(c, "Tracked", "", "Edit layout", function() NS.Movers:Toggle(true) end))
         local base = info.Refresh
         function info:Refresh()
@@ -363,8 +363,9 @@ local function buildPages()
         for _, t in ipairs(UI.TEXTURES) do textures[#textures + 1] = { value = t.key, label = t.label } end
         look:Add(W.Dropdown(look, "Accent colour", "Follow spec: purple for Arcane, orange for Fire, ice blue for Frost.", accents, bindAppearance("accent")))
         look:Add(W.Dropdown(look, "Font", nil, fonts, bindAppearance("font")))
-        -- up to 1.2: the cards and the settings window have fixed sizes (bigger: HUD scale)
-        look:Add(W.Slider(look, "Text size", nil, 0.7, 1.2, 0.05, mult, bindAppearance("fontScale")))
+        -- up to 1.2: the cards and the settings window have fixed sizes (bigger: HUD scale).
+        -- from 0.8: below that the 11 px HUD text is too small to read
+        look:Add(W.Slider(look, "Text size", nil, 0.8, 1.2, 0.05, mult, bindAppearance("fontScale")))
         look:Add(W.Dropdown(look, "Bar texture", nil, textures, bindAppearance("texture")))
         look:Add(W.Toggle(look, "Play sounds", nil, bind("appearance", "sounds")))
         look:Add(W.Slider(look, "Out of combat", "HUD opacity out of combat. 0% = hidden: only alerts stay.", 0, 1.0, 0.05, function(v) return v < 0.01 and "hidden" or (math.floor(v * 100 + 0.5) .. "%") end, bind("appearance", "idleAlpha")))

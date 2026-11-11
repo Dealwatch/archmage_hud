@@ -4,6 +4,7 @@
     Forever: the values still go straight into the bar (StatusBar setters
     accept secrets) and the client tints it through a colour curve; only the
     percentage and "hide at full" need readable numbers.
+    At its end: mana gem and Evocation as two small icons with their cooldowns.
 ]]
 
 local _, NS = ...

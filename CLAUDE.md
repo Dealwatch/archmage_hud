@@ -23,7 +23,7 @@ WoW Forever addon (interface 16001, Lua 5.1). English UI; the owner talks German
 - A value that may be secret is never compared, not even `== nil`: check `NS.IsSecret(v)` first.
 - Setters that take secrets from addon code: `SetText`, `SetValue`, `SetMinMaxValues`, `SetStatusBarColor`.
   `StatusBar:SetTimerDuration` takes a secret duration only from Blizzard code: try it in `pcall`, keep a fallback.
-- Text scales with Appearance > Text size (0.7 - 1.2x) inside frames of a fixed size: give a text field room for
+- Text scales with Appearance > Text size (0.8 - 1.2x) inside frames of a fixed size: give a text field room for
   1.2x, or size the frame from `GetStringWidth()` (proc card, edit-mode overlays).
 - A native slot's `onBuilt` runs the module's `Apply` while `Init` is still building: create every frame `Apply`
   touches before the first slot is built.

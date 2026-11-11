@@ -520,6 +520,21 @@ run("ready flash and live proc size", function()
     NS:ApplyAll()
 end)
 
+run("default font is the client's standard font", function()
+    local got
+    local fs = { SetFont = function(_, path) got = path; return true end }
+    NS.UI:Font(fs, 12)
+    assert(got == "Fonts\\FRIZQT__.TTF", "Latin client: Friz Quadrata")
+    STANDARD_TEXT_FONT = "Fonts\\FRIZQT___CYR.TTF"
+    NS.UI:Font(fs, 12)
+    assert(got == "Fonts\\FRIZQT___CYR.TTF", "Russian client: the font that has the glyphs")
+    NS.db.appearance.font = "Fonts\\ARIALN.TTF"
+    NS.UI:Font(fs, 12)
+    assert(got == "Fonts\\ARIALN.TTF", "a font you picked stays")
+    NS.db.appearance.font = "Fonts\\FRIZQT__.TTF"
+    STANDARD_TEXT_FONT = nil
+end)
+
 run("settings change", function()
     NS.db.appearance.accent = "arcane"
     NS.UI:ApplyAppearance()
@@ -692,7 +707,7 @@ run("stacks out of combat", function()
     fire("UNIT_AURA", "player", {})
     local st = NS.modules.stacks.state
     assert(st.stacks == 3 and st.full, "three Heating Up stacks read")
-    assert(NS.modules.stacks.hint:IsShown(), "Pyroblast hint at full stacks")
+    assert(NS.modules.stacks.hint:IsShown() and NS.modules.stacks.hint:GetText() == "Pyroblast!", "hint at full stacks: the spell's name")
     NS.db.stacks.width = 40
     NS.modules.stacks:Draw()
     assert(not NS.modules.stacks.hint:IsShown(), "a bar too narrow for the hint leaves it to the lit mark")
