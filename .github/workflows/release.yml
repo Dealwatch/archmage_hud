@@ -3,13 +3,21 @@ name: Release
 # Publish a release on GitHub (Releases > Draft a new release, new tag vX.Y.Z on main).
 # This job then runs the offline test and attaches the addon zip and release.json
 # (flavor "forever", read by WowUp) to that release.
+# Or run it by hand (Actions > Release > Run workflow, on main) with a tag: it creates that tag
+# on the commit and starts itself again on the tag, where the packager creates the release
+# (the packager only releases from a tag ref).
 on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to create and release, e.g. v0.2.1 (must match ## Version in the TOC). Empty: package only."
+        required: false
 
 permissions:
   contents: write
+  actions: write    # the manual run with a tag starts the run on that tag
 
 concurrency:
   group: release-${{ github.ref }}
@@ -24,7 +32,19 @@ jobs:
           fetch-depth: 0
       - name: Smoke test
         run: sudo apt-get install -y lua5.1 && lua5.1 tests/run.lua
+      - name: Tag (manual run with a tag)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.tag }}
+        env:
+          TAG: ${{ inputs.tag }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "not a version tag: $TAG"; exit 1; }
+          grep -q "^## Version: ${TAG#v}\s*$" ArchmageHUD.toc || { echo "$TAG does not match ## Version in the TOC"; exit 1; }
+          git tag "$TAG"
+          git push origin "$TAG"
+          gh workflow run release.yml --ref "$TAG"
       - name: Package and attach to the GitHub release
+        if: ${{ !inputs.tag }}
         uses: BigWigsMods/packager@v2
         env:
           GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}

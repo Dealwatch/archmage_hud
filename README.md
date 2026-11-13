@@ -262,6 +262,10 @@ the TOC, then on GitHub go to *Releases* >
 attaches the addon zip and `release.json` (flavor `forever`, used by WowUp) to that release
 (`.pkgmeta` leaves out `tests` and `.github`).
 
+Without the release page: *Actions* > *Release* > *Run workflow* on `main` with the tag (`vX.Y.Z`, it must match
+`## Version` in the TOC). The job creates the tag and starts itself again on it; that second run creates the
+release.
+
 ## License
 
 MIT, see [LICENSE](LICENSE).
