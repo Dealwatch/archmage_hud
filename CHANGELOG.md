@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.2.1
+Fix from the first in-game test.
+- Lua error `Stacks.lua:281: calling 'SetStatusBarColor' on bad self (Attempt to access forbidden object ...)`,
+  on every aura change: a bar, text, icon or swirl handed to the client's aura slot is forbidden to addon code
+  from then on, and the stack bar was recoloured afterwards. The addon no longer touches such a widget after
+  handing it over
+- The same mistake had silently kept the debuff bars and the rotation marks from using the client's aura slots
+  (they fell back to the addon's own timers, and the marks did not light up in combat). They are built in the
+  right order now
+- Gold at full stacks is the addon's own layer over the stack bar. The stack bar has its spec's accent colour
+  from the start; a changed accent colour or text size reaches the bars the client draws after a /reload at the
+  latest
+- The offline test client forbids handed-over widgets like the game does, so this cannot come back unnoticed
+
 ## 0.2.0
 The rotation, shown without more clutter, and a few things that make a mage's day easier. Nothing here decides for
 you: the marks are a fixed list that the client lights up from your stacks (as it fills the stack bar), and the

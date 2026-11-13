@@ -37,8 +37,25 @@ local eventFrames = {}     -- event -> { frame = true }
 local unitEventFrames = {}
 local allFrames = {}
 
+-- A widget handed to a native aura slot (SetApplicationBar, SetDurationText, SetIcon, ...) is the
+-- client's from then on: forbidden to addon code, and so is everything that hangs from it. Any
+-- call on it is the error the real client raised in the first in-game test (0.2.0, Stacks.lua).
+local playClient = false     -- true while a test or scene fills a slot the way the client would
+local function forbidden(o)
+    while o do
+        if rawget(o, "_forbidden") then return true end
+        o = rawget(o, "_parent")
+    end
+end
+local function handOver(o) o._forbidden = true end
+
 local Object = {}
 Object.__index = function(self, k)
+    if not playClient and type(k) == "string" and k:match("^%u") and forbidden(self) then
+        return function()
+            error("calling '" .. k .. "' on bad self (Attempt to access forbidden object from code tainted by an AddOn)", 2)
+        end
+    end
     local m = Object[k]
     if m ~= nil then return m end
     if type(k) == "string" and k:match("^%u") then
@@ -136,12 +153,12 @@ function Object:AddAuraGroup(key, filter, opts)
     self._ids = ids
     for _ = 1, 2 do opts.initializeFrame(newObject("Button", self)) end
 end
-function Object:SetApplicationBar(bar, o) assert(kindIs(bar, "StatusBar") and o and o.maxApplications, "application bar") end
-function Object:SetApplicationCount(fs) assert(kindIs(fs, "FontString"), "application count") end
-function Object:SetDurationBar(bar) assert(kindIs(bar, "StatusBar"), "duration bar") end
-function Object:SetDurationText(fs) assert(kindIs(fs, "FontString"), "duration text") end
-function Object:SetDurationCooldown(cd) assert(kindIs(cd, "Cooldown"), "duration cooldown") end
-function Object:SetIcon(t) assert(kindIs(t, "Texture"), "icon texture") end
+function Object:SetApplicationBar(bar, o) assert(kindIs(bar, "StatusBar") and o and o.maxApplications, "application bar"); handOver(bar) end
+function Object:SetApplicationCount(fs) assert(kindIs(fs, "FontString"), "application count"); handOver(fs) end
+function Object:SetDurationBar(bar) assert(kindIs(bar, "StatusBar"), "duration bar"); handOver(bar) end
+function Object:SetDurationText(fs) assert(kindIs(fs, "FontString"), "duration text"); handOver(fs) end
+function Object:SetDurationCooldown(cd) assert(kindIs(cd, "Cooldown"), "duration cooldown"); handOver(cd) end
+function Object:SetIcon(t) assert(kindIs(t, "Texture"), "icon texture"); handOver(t) end
 function Object:IsMouseOver() return false end
 
 function CreateFrame(kind, name, parent, template)
@@ -334,8 +351,10 @@ run("login", function()
     assert(NS.spec == "fire", "auto spec from talent spells: " .. tostring(NS.spec))
     for _, key in ipairs({ "stacks_fire", "stacks_frost", "procs_fire", "debuff_frostfireBolt", "debuff_fireVuln", "stacks_arcane", "absorb",
         "stacks2_arcane", "debuff_polymorph", "mark_arcane3", "mark_arcane4", "mark2_arcane3", "mark_fire3", "mark_frost5" }) do
-        assert(NS.Native.slots[key] and NS.Native.slots[key]:Active(), "native slot " .. key)
+        assert(NS.Native.slots[key], "native slot " .. key)
     end
+    -- every slot builds: a call on a widget after it was handed over would fail the build (silently, in game)
+    for key, h in pairs(NS.Native.slots) do assert(h:Active(), "native slot " .. key .. ": " .. tostring(h.err)) end
     assert(NS.Native.slots.stacks_fire.container._ids[400625], "heating up buff id in filter")
     assert(NS.Native.slots.stacks_arcane.container._ids[400573], "arcane blast buff id in filter")
     assert(NS.Native.slots.debuff_ignite.container._ids[412538], "forever ignite id in filter")
@@ -707,6 +726,8 @@ run("stacks out of combat", function()
     fire("UNIT_AURA", "player", {})
     local st = NS.modules.stacks.state
     assert(st.stacks == 3 and st.full, "three Heating Up stacks read")
+    -- the native bar is forbidden once handed over: drawing must not touch it (first in-game error, 0.2.0)
+    assert(NS.modules.stacks.gold:IsShown(), "gold at full stacks is our own layer over the native bar")
     assert(NS.modules.stacks.hint:IsShown() and NS.modules.stacks.hint:GetText() == "Pyroblast!", "hint at full stacks: the spell's name")
     NS.db.stacks.width = 40
     NS.modules.stacks:Draw()

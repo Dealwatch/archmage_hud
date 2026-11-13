@@ -14,7 +14,8 @@ src = src .. [==[
 return { Object = Object, allFrames = allFrames, fire = fire, tick = tick, run = run, NS = NS,
     BOOK = BOOK, SPELLS = SPELLS, playerAuras = playerAuras, targetAuras = targetAuras, bag = bag,
     setCombat = function(v) combat = v end, setMana = function(v) mana = v end,
-    setCast = function(c) casting = c end, setChannel = function(c) channeling = c end, now = function() return now end }
+    setCast = function(c) casting = c end, setChannel = function(c) channeling = c end, now = function() return now end,
+    setClient = function(v) playClient = v end }
 ]==]
 local ICON = {}
 for id, name in assert(io.open(R .. "iconmap.json")):read("*a"):gmatch('"(%d+)":%s*"([%w_]+)"') do ICON[tonumber(id)] = name end
@@ -113,12 +114,13 @@ rec("SetScrollChild", function(self, c)
     c._scrollParent = self
 end)
 -- native aura buttons: remember what the client would fill
-rec("SetIcon", function(self, t) self._nIcon = t end)
-rec("SetApplicationCount", function(self, fs) self._nCount = fs end)
-rec("SetApplicationBar", function(self, bar, o) self._nAppBar, self._nMin, self._nMax = bar, o.minApplications, o.maxApplications end)
-rec("SetDurationBar", function(self, bar) self._nDurBar = bar end)
-rec("SetDurationText", function(self, fs) self._nDurText = fs end)
-rec("SetDurationCooldown", function(self, cd) self._nCd = cd end)
+-- (_forbidden: handed over, the client's from then on - see tests/run.lua)
+rec("SetIcon", function(self, t) self._nIcon = t; t._forbidden = true end)
+rec("SetApplicationCount", function(self, fs) self._nCount = fs; fs._forbidden = true end)
+rec("SetApplicationBar", function(self, bar, o) self._nAppBar, self._nMin, self._nMax = bar, o.minApplications, o.maxApplications; bar._forbidden = true end)
+rec("SetDurationBar", function(self, bar) self._nDurBar = bar; bar._forbidden = true end)
+rec("SetDurationText", function(self, fs) self._nDurText = fs; fs._forbidden = true end)
+rec("SetDurationCooldown", function(self, cd) self._nCd = cd; cd._forbidden = true end)
 local layerOf = {}
 local oldCT, oldCF = Object.CreateTexture, Object.CreateFontString
 rec("CreateTexture", function(self, name, layer, inh, sub) local t = oldCT(self); t._layer = layer; t._sub = sub or 0; return t end)

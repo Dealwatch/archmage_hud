@@ -11,6 +11,8 @@
         auras on enemies; that is all we use it for
       * build the slot while auras are readable (out of combat)
       * we never read anything back from these frames, we only style them
+      * a widget handed to a slot (SetApplicationBar, SetDurationText, SetIcon, ...) is forbidden
+        to addon code from then on: style it and build its children first (NS.Attempt)
 ]]
 
 local _, NS = ...
@@ -135,7 +137,9 @@ function Native:Slot(spec)
             return
         end
         local ok, err = pcall(fn, self.button)
-        if not ok then geterrorhandler()(err) end
+        if ok then return end
+        -- the client may refuse a slot frame to addon code: /mage probe shows it, the player gets no error
+        if tostring(err):find("forbidden") then self.err = "restyle refused: " .. tostring(err) else geterrorhandler()(err) end
     end
 
     self.slots[spec.key] = h

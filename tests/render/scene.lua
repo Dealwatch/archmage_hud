@@ -10,6 +10,8 @@ local DEFS = NS.Spells.DEFS
 -- every candidate ID gets its name, so the fake spellbook resolves like the real one
 for _, d in pairs(DEFS) do for _, id in ipairs(d.ids) do C.SPELLS[id] = C.SPELLS[id] or d.en end end
 C.SPELLS[11119], C.SPELLS[11095], C.SPELLS[11071] = "Ignite", "Improved Scorch", "Frostbite"
+-- the fill* helpers below play the client: only they may touch the widgets the addon handed to a slot
+local function asClient(fn) return function(...) C.setClient(true); fn(...); C.setClient(false) end end
 
 local BASE = { 133, 116, 5143, 2136, 2948, 122, 120, 1953, 2139, 12051, 1459, 6117, 1463, 759, 3561, 118 }
 local SPEC = {
@@ -100,6 +102,9 @@ local function fillAbsorb(key)
     if not key then b:Hide() return end
     b:Show(); b._nIcon:SetTexture(tex(key))
 end
+
+fillStacks, fillSecond, fillMarks, clearNative = asClient(fillStacks), asClient(fillSecond), asClient(fillMarks), asClient(clearNative)
+fillProcs, fillDebuff, fillAbsorb = asClient(fillProcs), asClient(fillDebuff), asClient(fillAbsorb)
 
 -- a focus only where a scene says so (the fake client's UnitExists is always true)
 local hasFocus = false

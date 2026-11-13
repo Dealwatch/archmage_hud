@@ -67,23 +67,24 @@ local function buildRow(key, parent, unit)
             tex:SetPoint("TOPLEFT", 1, -1)
             tex:SetPoint("BOTTOMRIGHT", -1, 1)
             tex:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-            b:SetIcon(tex)
             r.nativeIcon = iconFrame
             local bar = CreateFrame("StatusBar", nil, b)
-            bar:SetPoint("LEFT", iconFrame, "RIGHT", 2, 0)
-            bar:SetSize(bw - bh - 2, bh)
+            -- between the icon and the button's right edge: it follows the button's size by itself
+            bar:SetPoint("TOPLEFT", iconFrame, "TOPRIGHT", 2, 0)
+            bar:SetPoint("BOTTOMRIGHT", b, "BOTTOMRIGHT", 0, 0)
             UI:Skin(bar, UI.palette.track, UI.palette.border, bh >= 12 and "sm" or "xs")
             bar:SetStatusBarTexture(UI:BarTexture())
             bar:SetStatusBarColor(color[1], color[2], color[3])
-            b:SetDurationBar(bar, { direction = Enum.StatusBarTimerDirection and Enum.StatusBarTimerDirection.RemainingTime or 1 })
             local time = UI:Text(bar, 11, UI.palette.text, "OUTLINE")
             time:SetPoint("RIGHT", -4, 0)
             time:SetJustifyH("RIGHT")
-            b:SetDurationText(time)
             local count = UI:Text(bar, 11, UI.palette.text, "OUTLINE")   -- stacks, readable on the bar
             count:SetPoint("LEFT", bar, "LEFT", 4, 0)
+            -- handed over last: icon, bar and texts are the client's from here on (see NS.Attempt)
+            b:SetIcon(tex)
+            b:SetDurationBar(bar, { direction = Enum.StatusBarTimerDirection and Enum.StatusBarTimerDirection.RemainingTime or 1 })
+            b:SetDurationText(time)
             b:SetApplicationCount(count)
-            r.nativeBar = bar
         end,
         onBuilt = function() Db:Apply() end,
     })
@@ -232,10 +233,7 @@ function Db:Apply()
         UI:SafeShow(r, on and active[key] or false)
         r.native:Restyle(function(b)
             b:SetSize(db.width, db.height)
-            if r.nativeBar then
-                r.nativeIcon:SetSize(db.height, db.height)
-                r.nativeBar:SetSize(db.width - db.height - 2, db.height)
-            end
+            if r.nativeIcon then r.nativeIcon:SetSize(db.height, db.height) end   -- our frame; the bar follows by its anchors
         end)
     end
     self:ShowFocus()

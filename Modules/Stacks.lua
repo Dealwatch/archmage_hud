@@ -87,11 +87,12 @@ local function buildHost(spec, s)
             bar:SetPoint("TOPLEFT", 1, -1)
             bar:SetPoint("BOTTOMRIGHT", -1, 1)
             bar:SetStatusBarTexture(UI.WHITE)
-            bar:SetStatusBarColor(UI:Accent())
-            b:SetApplicationBar(bar, { minApplications = 0, maxApplications = s.max })
+            bar:SetStatusBarColor(UI:Accent(spec))   -- its own spec's accent: it cannot be recoloured later
             -- time left of the stack aura (Arcane Blast's 18 s window), right of the bar
             local time = UI:Text(b, 12, UI.palette.text, "OUTLINE")
             time:SetPoint("LEFT", b, "RIGHT", 8, 0)   -- clear of the full-stacks glow
+            -- handed over last: bar and text are the client's from here on (see NS.Attempt)
+            b:SetApplicationBar(bar, { minApplications = 0, maxApplications = s.max })
             b:SetDurationText(time)
             h.bar = bar
         end,
@@ -106,6 +107,8 @@ end
 -- aura whose application bar runs from n - 1 to n. The bar is the gold frame ("cast this", like the
 -- proc card and a lit cooldown) and the bright icon rides on its fill. So it works while the stacks
 -- are secret in combat, where our own gold bar and hint cannot.
+-- The bright icon hangs from the bar, so it comes and goes with it; like the bar it is the client's
+-- once handed over (see NS.Attempt), so it gets its spell when the slot is built.
 local function buildMark(spec, s, n, keys, second)
     local m = CreateFrame("Frame", nil, frame)
     m:SetSize(MARK, MARK)
@@ -125,13 +128,20 @@ local function buildMark(spec, s, n, keys, second)
             bar:SetAllPoints()
             bar:SetStatusBarTexture(UI.WHITE)
             bar:SetStatusBarColor(GOLD[1], GOLD[2], GOLD[3])
-            b:SetApplicationBar(bar, { minApplications = n - 1, maxApplications = n })
             -- anchored to the fill with an inset: no fill, no icon (its anchors cross, so it is not drawn)
             local fill = bar:GetStatusBarTexture()
             m.lit = bar:CreateTexture(nil, "OVERLAY")
             m.lit:SetPoint("TOPLEFT", fill, "TOPLEFT", 2, -2)
             m.lit:SetPoint("BOTTOMRIGHT", fill, "BOTTOMRIGHT", -2, 2)
             m.lit:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+            local d   -- the spell you know, else the first: the icon cannot be changed after the handover
+            for _, key in ipairs(keys) do
+                local c = Spells:Get(key)
+                if not d and c and c.known then d = c end
+            end
+            m.lit:SetTexture((d or Spells:Get(keys[1])).icon)
+            -- handed over last: the bar and the icon on it are the client's from here on
+            b:SetApplicationBar(bar, { minApplications = n - 1, maxApplications = n })
         end,
         onBuilt = function() St:Apply() end,
     })
@@ -201,6 +211,12 @@ function St:Init()
     self.dividers:SetAllPoints()
     self.dividers:SetFrameLevel(frame:GetFrameLevel() + 10)
     self.dividers.lines = {}
+    self.gold = self.dividers:CreateTexture(nil, "ARTWORK")   -- full stacks: over the native bar, under the dividers
+    self.gold:SetTexture(UI.WHITE)
+    self.gold:SetVertexColor(GOLD[1], GOLD[2], GOLD[3], 1)
+    self.gold:SetPoint("TOPLEFT", 1, -1)
+    self.gold:SetPoint("BOTTOMRIGHT", -1, 1)
+    self.gold:Hide()
     for i = 1, MAX_PIPS - 1 do
         local t = self.dividers:CreateTexture(nil, "OVERLAY")
         t:SetTexture(UI.WHITE)
@@ -277,9 +293,10 @@ function St:Draw()
     self.track:SetShown(native and true or false)
     self.dividers:SetShown(native and true or false)
     local r, g, b = UI:Accent()
-    if h and h.bar then
-        if state.full then h.bar:SetStatusBarColor(GOLD[1], GOLD[2], GOLD[3]) else h.bar:SetStatusBarColor(r, g, b) end
-    end
+    -- the native bar is the client's (forbidden): gold at full is our own layer on top of it, and a
+    -- new accent colour is only an attempt (else it shows after a /reload)
+    if h then NS.Attempt(h.bar, "SetStatusBarColor", r, g, b) end
+    self.gold:SetShown(native and state.full or false)
     local filled = stacks or 0
     for i = 1, MAX_PIPS do
         local p = pips[i]
@@ -338,7 +355,7 @@ function St:Apply()
         end
         if m.def then
             m.icon:SetTexture(m.def.icon)
-            if m.lit then m.lit:SetTexture(m.def.icon) end
+            NS.Attempt(m.lit, "SetTexture", m.def.icon)   -- set when the slot was built; talents changed since: an attempt
         end
         if m.spec == NS.spec then
             m:ClearAllPoints()   -- the second aura's mark follows its pips, under the first two segments

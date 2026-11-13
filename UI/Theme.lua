@@ -48,9 +48,10 @@ UI.ACCENTS = {
     { key = "frost",  label = "Frost",   color = { 0.550, 0.860, 1.000 } },
 }
 
-function UI:Accent()
+-- spec: the accent a spec would have (for bars built once per spec); default: the active spec
+function UI:Accent(spec)
     local key = NS.db and NS.db.appearance.accent or "mage"
-    if key == "spec" then key = NS.spec or "mage" end
+    if key == "spec" then key = spec or NS.spec or "mage" end
     for _, a in ipairs(self.ACCENTS) do
         if a.key == key and a.color then return a.color[1], a.color[2], a.color[3] end
     end
@@ -419,7 +420,8 @@ function UI:ApplyAppearance()
     for _, f in ipairs(self.hud) do
         NS.AfterCombat("scale" .. tostring(f), function() f:SetScale(scale) end)
     end
-    for fs, info in pairs(fontStrings) do self:Font(fs, info.size, info.flags) end
+    -- texts handed to a native slot are forbidden: they keep the font they were built with
+    for fs, info in pairs(fontStrings) do pcall(self.Font, self, fs, info.size, info.flags) end
     local tex = self:BarTexture()
     for bar in pairs(bars) do bar:SetStatusBarTexture(tex) end
     NS:Send("MF_APPEARANCE")

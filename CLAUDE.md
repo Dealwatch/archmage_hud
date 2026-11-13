@@ -33,4 +33,9 @@ WoW Forever addon (interface 16001, Lua 5.1). English UI; the owner talks German
 - The column is ordered act (proc card, stacks + marks, mana, cast bar, cooldowns) then watch (debuffs, Polymorph).
 - New HUD element: register it with `Movers:Register`, give it a row in `Layout.Column`, a sentence in `TIPS`
   (UI/Movers.lua, for `/mage legend`) and a scene in `tests/render/scene.lua`.
+- A widget handed to a native slot (`SetApplicationBar`, `SetDurationBar`, `SetDurationText`,
+  `SetApplicationCount`, `SetIcon`, `SetDurationCooldown`) is forbidden to addon code from then on, with its
+  children: style it, anchor it and build its children first, hand it over last, never call it again
+  (`NS.Attempt` for a call that may be refused). An error inside a slot's `init` fails the build silently in
+  game (fallback widgets): the test asserts that every slot is active. Found in the first in-game test (0.2.0).
 - Native aura slots: retry with `later()` when auras are secret out of combat, never `AfterCombat` alone.

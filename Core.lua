@@ -45,6 +45,15 @@ function NS.Try(fn, ...)
     return unpack(res, 2)
 end
 
+-- A widget handed to a native aura slot (SetApplicationBar, SetDurationBar, SetDurationText,
+-- SetApplicationCount, SetIcon, SetDurationCooldown) is the client's from then on: it is forbidden
+-- to addon code, with everything that hangs from it, and any call on it is a Lua error. So style it
+-- and build its children before handing it over. A call after that is only ever an attempt.
+function NS.Attempt(obj, method, ...)
+    if obj == nil then return false end
+    return pcall(obj[method], obj, ...)
+end
+
 -- For visibility: NS.combat is set first thing at PLAYER_REGEN_DISABLED, before the lockdown starts.
 function NS.InCombat()
     return NS.combat or InCombatLockdown()

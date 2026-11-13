@@ -2,7 +2,7 @@
 ## Title: |cff69ccf0Archmage|r |cffe8eaedHUD|r
 ## Notes: Arcane, Fire & Frost HUD for WoW Forever: procs, stacks, target debuffs, cooldowns, mana and reminders.
 ## Author: Dealwatch
-## Version: 0.2.0
+## Version: 0.2.1
 ## SavedVariables: ArchmageHUDDB
 ## IconTexture: Interface\Icons\Spell_Holy_MagicalSentry
 ## Category: Combat

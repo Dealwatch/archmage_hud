@@ -10,8 +10,9 @@ come from your client, in its language.
 
 Same look and handling as *Shammy Forever* (settings window, edit mode, alerts).
 
-> Status: **0.2.0, first in-game test pending.** It is built against Blizzard's Forever UI code
-> and an offline test client. Nothing is confirmed in the real game yet.
+> Status: **0.2.1, in-game testing has started.** It is built against Blizzard's Forever UI code and an offline
+> test client. Confirmed in the real game so far: the addon loads and the client's aura slot for the stack bar is
+> created. Everything else is still open (see *Open points*).
 
 ## Install
 
@@ -190,7 +191,11 @@ Plus every Classic rank of the other spells (see `Spells.lua`). `/mage spells` p
 
 ### Open points for the first test
 
-- Whether the native aura container works in the real client (`/mage probe` shows `native` per slot).
+- Whether every native aura slot builds in the real client: `/mage probe` must show `native` for each slot, with
+  no text after it. The first test (0.2.0) raised a Lua error because the stack bar was recoloured after it was
+  handed to the client (such a widget is forbidden to addons from then on); fixed in 0.2.1, where the addon never
+  touches a handed-over widget again.
+- A changed accent colour or text size may reach the bars and texts the client draws only after a /reload.
 - Whether the client lights up spells for Heating Up / Missile Barrage / Fingers of Frost (proc card).
 - Cast bar: `/mage probe` after a cast in combat shows how the bar ran: `native` (the client's duration object),
   `readable` (with time text) or `secret` (bar still fills, no time text), and whether Blizzard's cast bar was
