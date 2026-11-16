@@ -41,11 +41,11 @@ function Cd:Update()
     local size = NS.db.cooldowns.size
     local want = {}
     local x = 0
-    local rotation, utility = {}, false
-    for _, key in ipairs(Spells.SPEC_DATA[NS.spec].cooldowns) do rotation[key] = true end
+    local utility = false
+    local list, rotation = Spells:CooldownsFor(NS.spec)
     local small = math.floor(size * 0.7 + 0.5)
     local atMana = NS:IsEnabled("mana") and NS.db.mana.tools   -- Evocation sits at the mana bar then
-    for _, key in ipairs(Spells:CooldownsFor(NS.spec)) do
+    for _, key in ipairs(list) do
         local def = Spells:Get(key)
         if def and (def.known or (NS.editing and x == 0)) and not (key == "evocation" and atMana) then
             want[key] = true

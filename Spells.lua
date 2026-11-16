@@ -114,7 +114,8 @@ Spells.DEFS = DEFS
 --   stacks    one stacking aura for the segmented bar: { key, unit, filter, max, full = the spell to cast at
 --             full stacks: its name, in the client's language like the proc card, is the hint }
 --   debuffs   your debuffs on the target, one bar each
---   cooldowns spec cooldowns, in front of the shared ones
+--   cooldowns spec cooldowns, in front of the shared ones; { key, unless = other key } is there only
+--             while you do not know the other spell (Frost before Ice Lance: Fire Blast)
 --   card      spell shown on the proc card in edit mode
 --   stacks.marks  rotation marks under the stack bar: { stacks at which to cast, spell keys (the first one
 --                 you know) }; the client lights the icon up at that many stacks. stacks.tip: /mage legend
@@ -148,7 +149,8 @@ Spells.SPEC_DATA = {
                    marks = { { 5, "coneOfCold" } }, tip = "Winter's Chill: the Cone of Cold icon lights up at 5" },
         opener = { "frostbolt", "frostNova", "iceLance", "frostbolt" },
         debuffs = { "frostNova", "frostbite" },
-        cooldowns = { "iceLance", "iceBarrier", "coneOfCold", "coldSnap" },
+        -- Fire Blast until you have Ice Lance (they share their cooldown): the one instant of a leveling mage
+        cooldowns = { "iceLance", { "fireBlast", unless = "iceLance" }, "iceBarrier", "coneOfCold", "coldSnap" },
         card = "iceLance",
     },
 }
@@ -285,16 +287,28 @@ function Spells:KnownAny(group)
     end
 end
 
--- Spec cooldowns first, then the shared ones, without duplicates.
+-- Spec cooldowns first, then the shared ones, without duplicates. Second value: the spec's own
+-- (key -> true), for the large tier of the row.
 function Spells:CooldownsFor(spec)
-    local out, seen = {}, {}
+    local out, seen, own = {}, {}, {}
     local d = self.SPEC_DATA[spec] or {}
     for _, list in ipairs({ d.cooldowns or {}, self.SHARED_COOLDOWNS }) do
-        for _, key in ipairs(list) do
-            if not seen[key] then seen[key] = true; out[#out + 1] = key end
+        for _, e in ipairs(list) do
+            local key, unless = e, nil
+            if type(e) == "table" then key, unless = e[1], e.unless end
+            if not seen[key] and not (unless and self:Known(unless)) then
+                seen[key] = true
+                out[#out + 1] = key
+                own[key] = list ~= self.SHARED_COOLDOWNS or nil
+            end
         end
     end
-    return out
+    return out, own
+end
+
+-- Talent points start at level 10: before that there is no stack to build for any spec.
+function Spells.HasTalents()
+    return (NS.Try(UnitLevel, "player") or 60) >= 10
 end
 
 -- A debuff row shows when you can cast the spell, or you have the talent that causes it

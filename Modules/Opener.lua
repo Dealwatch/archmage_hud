@@ -24,14 +24,15 @@ local icons = {}
 local state = { step = 1, started = nil }
 Op.state = state
 
--- the spells of the opener that you know, in order
+-- the spells of the opener that you know, in order. With spells missing (leveling) the same spell
+-- can end up twice in a row: once is enough, and a single spell is no opener.
 local function list()
     local out = {}
     for _, key in ipairs(Spells.SPEC_DATA[NS.spec].opener or {}) do
         local d = Spells:Get(key)
-        if d and d.known then out[#out + 1] = d end
+        if d and d.known and out[#out] ~= d then out[#out + 1] = d end
     end
-    return out
+    return #out > 1 and out or {}
 end
 
 function Op:Draw()

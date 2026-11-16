@@ -654,6 +654,36 @@ run("polymorph on the focus", function()
     fire("SPELLS_CHANGED")
 end)
 
+run("level 8, no talents", function()
+    local level, book = UnitLevel, { unpack(BOOK) }
+    UnitLevel = function() return 8 end
+    for i = #BOOK, 1, -1 do BOOK[i] = nil end
+    for _, id in ipairs({ 133, 116, 2136, 5143, 1459, 168 }) do BOOK[#BOOK + 1] = id end   -- Fireball, Frostbolt, Fire Blast, ...
+    fire("SPELLS_CHANGED")
+    assert(NS.spec == "frost", "no talent to tell the spec from: " .. NS.spec)
+    local shown = {}
+    for _, f in ipairs(allFrames) do if f.cd and f.key and f._parent == _G.ArchmageHUDCooldowns and f._shown then shown[f.key] = f:GetWidth() end end
+    assert(shown.fireBlast == 30, "Fire Blast in the row while Ice Lance is not known, as a rotation spell")
+    assert(_G.ArchmageHUDCooldowns:IsShown(), "the cooldown row shows")
+    assert(not _G.ArchmageHUDOpener:IsShown(), "one known spell is no opener")
+    local with = NS.Layout.Column().mana[4]
+    fire("PLAYER_REGEN_DISABLED"); combat = true
+    assert(_G.ArchmageHUDStacks:GetAlpha() == 0, "no stack bar before level 10, also in combat")
+    combat = false; fire("PLAYER_REGEN_ENABLED")
+    UnitLevel = function() return 10 end
+    assert(NS.Layout.Column().mana[4] < with, "from level 10 the stack bar has its row")
+    SPELLS[1312002] = "Ice Lance"
+    BOOK[#BOOK + 1] = 1312002
+    fire("SPELLS_CHANGED")
+    local list = NS.Spells:CooldownsFor("frost")
+    for _, k in ipairs(list) do assert(k ~= "fireBlast", "with Ice Lance, Fire Blast leaves Frost's row") end
+    UnitLevel = level
+    for i = #BOOK, 1, -1 do BOOK[i] = nil end
+    for _, id in ipairs(book) do BOOK[#BOOK + 1] = id end
+    fire("SPELLS_CHANGED")
+    assert(NS.spec == "fire", "back to the test's mage")
+end)
+
 run("presets", function()
     assert(NS:Preset() == "full", "the defaults are the full preset: " .. tostring(NS:Preset()))
     NS:SetPreset("minimal")

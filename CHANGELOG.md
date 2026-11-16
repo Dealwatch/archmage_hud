@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.2
+For the mage who is still leveling (found at level 8: only the mana bar showed).
+- Without talents the spec falls back to Frost, whose cooldown row held nothing a new mage knows. Frost now shows
+  Fire Blast until you have Ice Lance (they share their cooldown)
+- No stack bar before level 10: there are no talents yet, and an empty bar named "Winter's Chill" only confused
+- The opener no longer shows the same spell twice when the spells between are missing, and not at all with a
+  single spell
+
 ## 0.2.1
 Fix from the first in-game test.
 - Lua error `Stacks.lua:281: calling 'SetStatusBarColor' on bad self (Attempt to access forbidden object ...)`,

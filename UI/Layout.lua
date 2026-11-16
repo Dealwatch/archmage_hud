@@ -54,7 +54,7 @@ function Layout.Column()
     -- the absorb icon sits left of the widest bar, so a large icon never covers one
     local left = -math.max(db.stacks.width, db.mana.width, db.castbar.width, db.debuffs.width) / 2 - 8
 
-    if NS:IsEnabled("stacks") and Spells.SPEC_DATA[NS.spec].stacks then
+    if NS:IsEnabled("stacks") and Spells.SPEC_DATA[NS.spec].stacks and (NS.editing or Spells.HasTalents()) then
         y = y - LABEL
         out.stacks = { "TOP", "CENTER", 0, y }
         out.absorb = { "TOPRIGHT", "CENTER", left, y + 2 }

@@ -10,7 +10,7 @@ come from your client, in its language.
 
 Same look and handling as *Shammy Forever* (settings window, edit mode, alerts).
 
-> Status: **0.2.1, in-game testing has started.** It is built against Blizzard's Forever UI code and an offline
+> Status: **0.2.2, in-game testing has started.** It is built against Blizzard's Forever UI code and an offline
 > test client. Confirmed in the real game so far: the addon loads and the client's aura slot for the stack bar is
 > created. Everything else is still open (see *Open points*).
 
@@ -36,7 +36,12 @@ The spec is detected from your talents (**Auto**) or set by hand: `/mage arcane`
 |---|---|---|
 | **Arcane** | Build Arcane Blast stacks (4, 18 s window). Clearcasting goes on Arcane Blast, Missile Barrage on Arcane Missiles, Arcane Wrath at 3-4 stacks (twice per window). Level 60 builds dip into Fire: Fire Blast on cooldown builds Heating Up, then Pyroblast at 3 Heating Up while 3-4 Arcane Blast stacks are up. Arcane Power / Presence of Mind at 4 stacks. | Stack bar: **Arcane Blast** (4, "Arcane Wrath!") with the time left of the window, and small pips for **Heating Up** (3). Procs: Missile Barrage, Clearcasting, Arcane Power, Presence of Mind. Cooldowns: Arcane Wrath, Fire Blast, Arcane Power, Presence of Mind |
 | **Fire** | Scorch to 5 Improved Scorch stacks, Fire Blast on cooldown, crits build **Heating Up** (3 stacks, each -25% cast time on Pyroblast, a 6 s cast on Forever), then Pyroblast. Fireball filler. Fire Power rewards Fireball DoT, Improved Scorch, Ignite and Pyroblast DoT on the target. Combustion for burst. Frostfire variant: Frostfire Bolt filler, Ice Lance on Fingers of Frost. | Stack bar: **Heating Up** (3, "Pyroblast!"). Debuffs: Fire Vulnerability (stacks), Fireball, Ignite, Pyroblast, Frostfire Bolt. Procs: Combustion, Wake of Fire, Clearcasting, Missile Barrage, Fingers of Frost. Cooldowns: Fire Blast, Ice Lance, Combustion, Blast Wave |
-| **Frost** | Frostbolt filler. Ice Lance (x4 damage) on Fingers of Frost, Frostbite or after Frost Nova. Arcane Missiles on Missile Barrage. Winter's Chill build: Cone of Cold at 5 stacks. Keep Arcane Intellect and Ice Barrier up at all times. | Stack bar: **Winter's Chill** on the target (5, "Cone of Cold!"). Debuffs: Frost Nova and Frostbite (target frozen = Ice Lance window). Procs: Fingers of Frost (charges), Clearcasting, Missile Barrage, Presence of Mind. Cooldowns: Ice Lance, Ice Barrier, Cone of Cold, Cold Snap. Alert when Ice Barrier is not up |
+| **Frost** | Frostbolt filler. Ice Lance (x4 damage) on Fingers of Frost, Frostbite or after Frost Nova. Arcane Missiles on Missile Barrage. Winter's Chill build: Cone of Cold at 5 stacks. Keep Arcane Intellect and Ice Barrier up at all times. | Stack bar: **Winter's Chill** on the target (5, "Cone of Cold!"). Debuffs: Frost Nova and Frostbite (target frozen = Ice Lance window). Procs: Fingers of Frost (charges), Clearcasting, Missile Barrage, Presence of Mind. Cooldowns: Ice Lance (Fire Blast until you have it), Ice Barrier, Cone of Cold, Cold Snap. Alert when Ice Barrier is not up |
+
+**While leveling:** before you have talents the addon cannot tell your spec and falls back to Frost (pick another
+one with `/mage fire` or `/mage arcane`). The HUD then shows what a new mage has: mana, cast bar, Fire Blast in the
+cooldown row (for Frost until you learn Ice Lance), the reminders. The stack bar comes at level 10, and each other
+element as you learn its spell or talent.
 
 Every spec also gets Frost Nova, Blink, Counterspell and Ice Block as small icons beside the spec's cooldowns;
 Evocation and the mana gem sit at the end of the mana bar. Only spells you know are shown. Fire Blast and Ice Lance

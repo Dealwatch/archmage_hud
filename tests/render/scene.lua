@@ -228,6 +228,27 @@ C.fire("UNIT_SPELLCAST_SUCCEEDED", "player", "g", 116); C.fire("UNIT_SPELLCAST_S
 C.tick(0.1); shot("prepull", "Frost, before the pull: opener two casts in (Frostbolt, Frost Nova done; Ice Lance next)", HUD)
 book("fire")
 
+-- LEVEL 8, no talents: what a new mage sees (few spells known, no talent to tell the spec from)
+for i = #C.BOOK, 1, -1 do C.BOOK[i] = nil end
+for _, id in ipairs({ 133, 116, 2136, 5143, 1459, 168, 118 }) do C.BOOK[#C.BOOK + 1] = id end
+local level = UnitLevel
+UnitLevel = function() return 8 end
+C.fire("SPELLS_CHANGED"); NS:SetSpec("auto")
+clearNative()
+C.setMana(1000); C.fire("UNIT_POWER_FREQUENT", "player", "MANA")
+C.fire("PLAYER_TARGET_CHANGED")
+C.tick(0.1); shot("low_prepull", "Level 8, no talents, before the pull (spec: " .. NS.spec .. ")", HUD)
+C.setMana(540)
+combat(true)
+C.fire("UNIT_POWER_FREQUENT", "player", "MANA"); mana(540)
+C.fire("SPELL_UPDATE_COOLDOWN")
+castNow("Fireball", 133, 2.5, 0.9)
+C.tick(0.1); shot("low_combat", "Level 8, no talents, in combat (spec: " .. NS.spec .. ")", HUD)
+castEnd()
+combat(false)
+UnitLevel = level
+book("fire")
+
 -- out of combat: alerts
 C.playerAuras[1], C.playerAuras[2] = nil, nil
 C.bag[5514] = 0; C.bag[17031] = 1
